@@ -873,7 +873,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxDKZytcAq9ZwbdOsW4roWChitas97ekJDZ8x77K5EL4NHg1RrmxJpcbYsf9Zba9iingA/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiPw2TKIpx5jn3c0sHNjZM3yHwQjqnc0lcz7PWRzFN1cARXMgCsEgysMZKBQCQQu3Z8A/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1020,31 +1020,104 @@ var pdfData = null; // dernière donnée pour download
 // ══════════════════════════════════════════════════════════
 //  DONNÉES LOCALES (config + utilisateurs)
 // ══════════════════════════════════════════════════════════
-function getConfig(){return lsGet('app_config')||{nom:'Multi Auto Center',tel:'',adr:'',ville:'',email:'',web:'',logoG:'',logoD:'',script:'',pwdAdmin:'admin2024',pwdSec:'secretaire2024'}}
-function saveConfigLocal(cfg){lsSet('app_config',cfg)}
+function getConfig(){
+  // D'abord localStorage comme cache rapide
+  var cfg=lsGet('app_config');
+  if(!cfg) cfg={nom:'Multi Auto Center',tel:'',adr:'',ville:'',email:'',web:'',logoG:'',logoD:'',script:'',pwdAdmin:'admin2024',pwdSec:'secretaire2024'};
+  return cfg;
+}
+function saveConfigLocal(cfg){
+  lsSet('app_config',cfg);
+  // Sauvegarder dans Sheets (sans les logos pour économiser)
+  var cfgSheets={nom:cfg.nom,tel:cfg.tel,adr:cfg.adr,ville:cfg.ville,email:cfg.email,web:cfg.web,script:cfg.script,pwdAdmin:cfg.pwdAdmin,pwdSec:cfg.pwdSec};
+  var url=getScriptUrl();
+  if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveConfig',config:cfgSheets})}).catch(function(){});
+}
 function getUsers(){return lsGet('app_users')||[]}
-function saveUsers(u){lsSet('app_users',u)}
+function saveUsers(u){
+  lsSet('app_users',u);
+  var url=getScriptUrl();
+  if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveUsers',users:u})}).catch(function(){});
+}
 function getMarques(){var def=JSON.parse('[{"nom": "Alfa Romeo", "modeles": ["Giulia", "Stelvio", "Tonale", "Giulietta", "MiTo", "156", "147", "159", "Brera", "Spider", "4C"]}, {"nom": "Audi", "modeles": ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "Q2", "Q3", "Q4", "Q5", "Q7", "Q8", "TT", "R8", "E-Tron"]}, {"nom": "BMW", "modeles": ["Série 1", "Série 2", "Série 3", "Série 4", "Série 5", "Série 6", "Série 7", "Série 8", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "Z4", "M3", "M5"]}, {"nom": "Chevrolet", "modeles": ["Spark", "Aveo", "Cruze", "Malibu", "Trax", "Captiva", "Orlando", "Camaro", "Corvette", "Silverado", "Colorado"]}, {"nom": "Citroën", "modeles": ["C1", "C2", "C3", "C3 Aircross", "C4", "C4 Cactus", "C5", "C5 Aircross", "C8", "Berlingo", "Jumper", "Jumpy", "Nemo", "Picasso", "Spacetourer", "DS3", "DS4", "DS5"]}, {"nom": "Dacia", "modeles": ["Sandero", "Logan", "Duster", "Lodgy", "Dokker", "Spring", "Jogger", "Bigster"]}, {"nom": "Dodge", "modeles": ["Challenger", "Charger", "Durango", "Journey", "Grand Caravan", "Ram 1500", "Viper"]}, {"nom": "Fiat", "modeles": ["500", "500X", "500L", "Panda", "Punto", "Tipo", "Bravo", "Doblo", "Ducato", "Fiorino", "Qubo", "Talento"]}, {"nom": "Ford", "modeles": ["Fiesta", "Focus", "Mondeo", "Mustang", "Puma", "Kuga", "EcoSport", "Edge", "Explorer", "Ranger", "Transit", "Transit Connect", "Transit Custom", "B-Max", "C-Max", "S-Max", "Galaxy"]}, {"nom": "Ford (Camion)", "modeles": ["Transit", "Transit Connect", "Transit Custom", "Ranger", "F-150", "F-250", "F-350"]}, {"nom": "Honda", "modeles": ["Civic", "Jazz", "HR-V", "CR-V", "FR-V", "Accord", "Legend", "NSX", "CBR 125", "CBR 600", "CBR 1000", "CB 500", "CB 750", "Africa Twin", "PCX", "Forza", "SH 125", "SH 150"]}, {"nom": "Hyundai", "modeles": ["i10", "i20", "i30", "i40", "i45", "Tucson", "Santa Fe", "Kona", "Ioniq", "Ioniq 5", "Ioniq 6", "Nexo", "Getz", "Accent", "Elantra", "Sonata", "Coupé"]}, {"nom": "Isuzu", "modeles": ["D-Max", "MU-X", "NPR", "NQR", "NPS", "FRR", "FVR"]}, {"nom": "Jeep", "modeles": ["Renegade", "Compass", "Cherokee", "Grand Cherokee", "Wrangler", "Gladiator", "Commander"]}, {"nom": "Kia", "modeles": ["Picanto", "Rio", "Ceed", "ProCeed", "Stonic", "Niro", "Sportage", "Sorento", "Telluride", "Soul", "Stinger", "EV6", "Carnival"]}, {"nom": "Land Rover", "modeles": ["Defender", "Discovery", "Discovery Sport", "Range Rover", "Range Rover Sport", "Range Rover Evoque", "Range Rover Velar", "Freelander"]}, {"nom": "Mazda", "modeles": ["Mazda 2", "Mazda 3", "Mazda 6", "CX-3", "CX-30", "CX-5", "CX-60", "CX-90", "MX-5", "MX-30", "RX-8"]}, {"nom": "Mercedes", "modeles": ["Classe A", "Classe B", "Classe C", "Classe CLA", "Classe CLS", "Classe E", "Classe G", "Classe GLA", "Classe GLB", "Classe GLC", "Classe GLE", "Classe GLK", "Classe GLS", "Classe S", "Classe SL", "Classe SLK", "Sprinter", "Vito", "Viano", "Citan"]}, {"nom": "MG", "modeles": ["MG3", "MG4", "MG5", "MG6", "MG ZS", "MG HS", "MG RX5", "MG Marvel R", "Cyberster"]}, {"nom": "Mini", "modeles": ["Mini 3 portes", "Mini 5 portes", "Mini Cabriolet", "Mini Clubman", "Mini Countryman", "Mini Paceman", "Mini Coupe", "Mini Roadster", "Mini Electric"]}, {"nom": "Mitsubishi", "modeles": ["Colt", "Lancer", "Outlander", "Eclipse Cross", "ASX", "Pajero", "L200", "Space Star", "Galant", "Carisma"]}, {"nom": "Nissan", "modeles": ["Micra", "Juke", "Qashqai", "X-Trail", "Leaf", "Ariya", "Navara", "Patrol", "Note", "Pulsar", "Almera", "Primera", "350Z", "370Z", "GT-R"]}, {"nom": "Opel", "modeles": ["Agila", "Corsa", "Astra", "Vectra", "Zafira", "Insignia", "Meriva", "Mokka", "Crossland", "Grandland", "Vivaro", "Movano", "Adam", "Karl"]}, {"nom": "Peugeot", "modeles": ["104", "106", "107", "108", "205", "206", "207", "208", "301", "306", "307", "308", "405", "406", "407", "408", "2008", "3008", "4007", "4008", "5008", "Boxer", "Expert", "Partner", "Traveller", "RCZ", "508", "e-208", "e-2008"]}, {"nom": "Porsche", "modeles": ["911", "Boxster", "Cayman", "Panamera", "Macan", "Cayenne", "Taycan"]}, {"nom": "Renault", "modeles": ["Twingo", "Clio", "Zoe", "Megane", "Scenic", "Laguna", "Espace", "Talisman", "Captur", "Kadjar", "Koleos", "Duster", "Kangoo", "Trafic", "Master", "Alaskan", "Arkana", "Austral", "Symbioz", "Rafale", "4L", "R5", "R9", "R11", "R19", "R21", "R25"]}, {"nom": "Seat", "modeles": ["Mii", "Ibiza", "Leon", "Toledo", "Altea", "Alhambra", "Arona", "Ateca", "Tarraco"]}, {"nom": "Skoda", "modeles": ["Citigo", "Fabia", "Rapid", "Octavia", "Superb", "Yeti", "Karoq", "Kodiaq", "Enyaq"]}, {"nom": "Suzuki", "modeles": ["Alto", "Swift", "Ignis", "Baleno", "Vitara", "S-Cross", "Jimny", "Across", "SX4", "Celerio", "GSX-R 125", "GSX-R 600", "GSX-R 750", "GSX-R 1000", "Burgman", "V-Strom", "Bandit"]}, {"nom": "Tesla", "modeles": ["Model S", "Model 3", "Model X", "Model Y", "Roadster", "Cybertruck"]}, {"nom": "Toyota", "modeles": ["Aygo", "Yaris", "Corolla", "Camry", "Auris", "Avensis", "C-HR", "RAV4", "Land Cruiser", "Hilux", "Prius", "Supra", "GR86", "Mirai", "Proace", "Verso", "Alphard"]}, {"nom": "Volkswagen", "modeles": ["Up", "Polo", "Golf", "Jetta", "Passat", "Arteon", "T-Roc", "T-Cross", "Tiguan", "Touareg", "Touran", "Sharan", "Caddy", "Transporter", "Crafter", "Amarok", "ID.3", "ID.4", "ID.5", "ID.7", "Phaeton", "Scirocco"]}, {"nom": "Volvo", "modeles": ["V40", "V60", "V90", "S60", "S90", "XC40", "XC60", "XC90", "C40", "EX30", "EX90"]}, {"nom": "Yamaha", "modeles": ["YZF-R 125", "YZF-R3", "YZF-R6", "YZF-R7", "YZF-R1", "MT-03", "MT-07", "MT-09", "MT-10", "TMAX", "XMAX 125", "XMAX 300", "XMAX 400", "Ténéré 700", "Ténéré 1200", "FZ6", "FZ8", "XSR 700", "XSR 900", "Nmax", "Aerox"]}]');def=def.map(function(m,i){if(!m.id)m.id=String(i+1);return m});return lsGet('app_marques')||def;}
-function saveMarques(m){lsSet('app_marques',m)}
+function saveMarques(m){
+  lsSet('app_marques',m);
+  var url=getScriptUrl();
+  if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveMarques',marques:m})}).catch(function(){});
+}
 function getClients(){return lsGet('app_clients')||[]}
-function saveClients(c){lsSet('app_clients',c)}
+function saveClients(c){
+  lsSet('app_clients',c);
+  var url=getScriptUrl();
+  if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveClients',clients:c})}).catch(function(){});
+}
 function getCamions(){return lsGet('app_camions')||[]}
-function saveCamions(c){lsSet('app_camions',c)}
+function saveCamions(c){
+  lsSet('app_camions',c);
+  var url=getScriptUrl();
+  if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveCamions',camions:c})}).catch(function(){});
+}
 function getCounterBL(pref){return parseInt(lsGet('bl_'+pref))||1}
 function getCounterRC(pref){return parseInt(lsGet('rc_'+pref))||1}
 function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||''}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbyiPw2TKIpx5jn3c0sHNjZM3yHwQjqnc0lcz7PWRzFN1cARXMgCsEgysMZKBQCQQu3Z8A/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════
+// ── CHARGEMENT DEPUIS SHEETS AU DÉMARRAGE ────────────────
+function chargerDepuisSheets(){
+  var url=getScriptUrl();
+  if(!url) return;
+  fetch(url+'?action=getAppData')
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d) return;
+      // Config
+      if(d.config){
+        var cfg=getConfig();
+        Object.keys(d.config).forEach(function(k){if(d.config[k])cfg[k]=d.config[k]});
+        lsSet('app_config',cfg);
+        if(d.config.script) lsSet('cfg_script',d.config.script);
+      }
+      // Chauffeurs
+      if(d.users && d.users.length){
+        lsSet('app_users',d.users);
+      }
+      // Camions
+      if(d.camions && d.camions.length){
+        lsSet('app_camions',d.camions);
+      }
+      // Marques
+      if(d.marques && d.marques.length){
+        lsSet('app_marques',d.marques);
+      }
+      // Clients
+      if(d.clients && d.clients.length){
+        lsSet('app_clients',d.clients);
+      }
+      // Compteurs BL/Reçus
+      if(d.compteurs){
+        Object.keys(d.compteurs).forEach(function(k){
+          lsSet(k, d.compteurs[k]);
+        });
+      }
+      chargerLogosUI();
+      console.log('✅ Données chargées depuis Google Sheets');
+    })
+    .catch(function(e){
+      console.log('⚠️ Chargement hors ligne — données locales utilisées');
+    });
+}
+
 window.addEventListener('load', function(){
   chargerLogosUI();
   initServiceWorker();
   syncOffline();
+  chargerDepuisSheets();
   // Dates par défaut
   var auj=new Date(), d1=new Date(); d1.setDate(1);
   var fmtISO=function(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)};
@@ -1180,6 +1253,51 @@ function capitalizeFirst(input){
 }
 
 // Initialiser sur les champs concernés
+// ── CHARGEMENT DEPUIS SHEETS AU DÉMARRAGE ────────────────
+function chargerDepuisSheets(){
+  var url=getScriptUrl();
+  if(!url) return;
+  fetch(url+'?action=getAppData')
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d) return;
+      // Config
+      if(d.config){
+        var cfg=getConfig();
+        Object.keys(d.config).forEach(function(k){if(d.config[k])cfg[k]=d.config[k]});
+        lsSet('app_config',cfg);
+        if(d.config.script) lsSet('cfg_script',d.config.script);
+      }
+      // Chauffeurs
+      if(d.users && d.users.length){
+        lsSet('app_users',d.users);
+      }
+      // Camions
+      if(d.camions && d.camions.length){
+        lsSet('app_camions',d.camions);
+      }
+      // Marques
+      if(d.marques && d.marques.length){
+        lsSet('app_marques',d.marques);
+      }
+      // Clients
+      if(d.clients && d.clients.length){
+        lsSet('app_clients',d.clients);
+      }
+      // Compteurs BL/Reçus
+      if(d.compteurs){
+        Object.keys(d.compteurs).forEach(function(k){
+          lsSet(k, d.compteurs[k]);
+        });
+      }
+      chargerLogosUI();
+      console.log('✅ Données chargées depuis Google Sheets');
+    })
+    .catch(function(e){
+      console.log('⚠️ Chargement hors ligne — données locales utilisées');
+    });
+}
+
 window.addEventListener('load', function(){
   ['inp-client','inp-emb','inp-dest','inp-obs'].forEach(function(id){
     var el = document.getElementById(id);
@@ -1902,7 +2020,10 @@ function uploadLogoGauche(e){
   var reader=new FileReader();
   reader.onload=function(ev){
     var data=ev.target.result;
-    var cfg=getConfig(); cfg.logoG=data; saveConfigLocal(cfg);
+    var cfg=getConfig(); cfg.logoG=data; lsSet('app_config',cfg);
+    // Sauvegarder logo dans Sheets séparément
+    var url=getScriptUrl();
+    if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveLogo',side:'G',data:data})}).catch(function(){});
     G('logo-gauche-prev').src=data; G('logo-gauche-prev').style.display='block';
     chargerLogosUI(); showToast('✅ Logo gauche enregistré');
   };
@@ -1914,7 +2035,9 @@ function uploadLogoDroite(e){
   var reader=new FileReader();
   reader.onload=function(ev){
     var data=ev.target.result;
-    var cfg=getConfig(); cfg.logoD=data; saveConfigLocal(cfg);
+    var cfg=getConfig(); cfg.logoD=data; lsSet('app_config',cfg);
+    var url=getScriptUrl();
+    if(url) fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveLogo',side:'D',data:data})}).catch(function(){});
     G('logo-droite-prev').src=data; G('logo-droite-prev').style.display='block';
     chargerLogosUI(); showToast('✅ Logo droite enregistré');
   };

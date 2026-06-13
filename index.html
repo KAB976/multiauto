@@ -873,7 +873,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwyUvn6vpfKbUfFjDumVjHWRIiRsiKV4LJIsL3ITPa9xFojNyCL08jCdA0TP2W0ZrAc/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzc8Vd_dvnKpSl_MpNBCIn8Oo1UdvTIgruj0YlhumaQDjxgiUvywNl6GvCl9KjVESBKNw/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1057,7 +1057,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbwyUvn6vpfKbUfFjDumVjHWRIiRsiKV4LJIsL3ITPa9xFojNyCL08jCdA0TP2W0ZrAc/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbzc8Vd_dvnKpSl_MpNBCIn8Oo1UdvTIgruj0YlhumaQDjxgiUvywNl6GvCl9KjVESBKNw/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -1499,7 +1499,7 @@ function enregistrer(){
     loader(false); afficherSucces(bonNum,recuNum,payload,true); return;
   }
 
-  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
     .then(function(){loader(false);afficherSucces(bonNum,recuNum,payload,false)})
     .catch(function(){
       var off=lsGet('bons_offline')||[]; off.push(payload); lsSet('bons_offline',off);
@@ -1555,7 +1555,7 @@ function syncOffline(){
   if(!url) return;
   var pending=[...off]; lsSet('bons_offline',[]);
   pending.forEach(function(payload){
-    fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
       .catch(function(){
         var o=lsGet('bons_offline')||[]; o.push(payload); lsSet('bons_offline',o);
       });
@@ -1604,18 +1604,20 @@ function apiCall(params,cb){
 function apiPost(data,cb){
   var url=getScriptUrl();
   if(!url){if(cb)cb(null,'URL non configurée');return}
-  // Encoder en GET pour éviter les problèmes CORS avec POST
-  var params=new URLSearchParams();
-  params.append('action',data.action);
-  params.append('data',JSON.stringify(data));
-  fetch(url+'?'+params.toString())
-    .then(function(r){return r.json()})
-    .then(function(d){if(cb)cb(d,null)})
-    .catch(function(e){
-      // Fallback: essayer en POST no-cors (sans réponse)
-      fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)});
-      if(cb)cb({ok:true},null);
-    });
+  // POST direct vers Apps Script
+  fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(data)
+  })
+  .then(function(r){return r.json()})
+  .then(function(d){if(cb)cb(d,null)})
+  .catch(function(e){
+    // Fallback no-cors si CORS bloque
+    fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)})
+      .catch(function(){});
+    if(cb)cb({ok:true},null);
+  });
 }
 
 function secLoadBL(){

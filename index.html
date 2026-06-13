@@ -27,7 +27,7 @@
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#F0F2F5;color:var(--tx);font-size:15px;min-height:100vh}
 
 /* ── AUTEUR KAB ── */
-.auteur{position:fixed;right:11px;bottom:7px;z-index:9999;font-family:"Comic Sans MS","Comic Neue",cursive;font-style:italic;font-weight:bold;font-size:14px;color:#3FB6F0;text-shadow:0 1px 3px rgba(255,255,255,.9);pointer-events:none;letter-spacing:.3px}
+.auteur{position:fixed;right:11px;bottom:7px;z-index:9999;font-family:ComicSansMS,cursive,"Comic Neue",cursive;font-style:italic;font-weight:bold;font-size:14px;color:#3FB6F0;text-shadow:0 1px 3px rgba(255,255,255,.9);pointer-events:none;letter-spacing:.3px}
 
 /* ── LOADER ── */
 #loader{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9000}
@@ -1226,9 +1226,10 @@ var pdfData = null; // dernière donnée pour download
 //  DONNÉES LOCALES (config + utilisateurs)
 // ══════════════════════════════════════════════════════════
 function getConfig(){
-  // D'abord localStorage comme cache rapide
-  var cfg=lsGet('app_config');
-  if(!cfg) cfg={nom:'Multi Auto Center',tel:'',adr:'',ville:'',email:'',web:'',logoG:'',logoD:'',script:'',pwdAdmin:'admin2024',pwdSec:'secretaire2024'};
+  var defaults={nom:'Multi Auto Center',tel:'',adr:'',ville:'',email:'',web:'',logoG:'',logoD:'',script:'',pwdAdmin:'admin2024',pwdSec:'secretaire2024'};
+  var cfg=lsGet('app_config')||{};
+  // Toujours avoir les valeurs par défaut si absentes
+  Object.keys(defaults).forEach(function(k){if(!cfg[k])cfg[k]=defaults[k];});
   return cfg;
 }
 function saveConfigLocal(cfg){
@@ -1278,7 +1279,11 @@ function chargerDepuisSheets(){
       // Config
       if(d.config){
         var cfg=getConfig();
-        Object.keys(d.config).forEach(function(k){if(d.config[k])cfg[k]=d.config[k]});
+        // Ne pas écraser les mots de passe depuis Sheets
+        var protectedKeys=['pwdAdmin','pwdSec'];
+        Object.keys(d.config).forEach(function(k){
+          if(d.config[k] && protectedKeys.indexOf(k)<0) cfg[k]=d.config[k];
+        });
         lsSet('app_config',cfg);
         if(d.config.script) lsSet('cfg_script',d.config.script);
       }
@@ -1486,19 +1491,19 @@ function soumettreMBL(){
   var emb=G('mbl-emb').value.trim();
   var dest=G('mbl-dest').value.trim();
   var dateVal=G('mbl-date').value;
-  if(!chaufId){err.textContent='Choisissez un chauffeur';err.classList.add('on');return;}
-  if(!immat){err.textContent='Saisissez l'immatriculation';err.classList.add('on');return;}
-  if(!marque){err.textContent='Choisissez la marque';err.classList.add('on');return;}
-  if(!modele){err.textContent='Choisissez le modèle';err.classList.add('on');return;}
-  if(!client){err.textContent='Saisissez le nom du client';err.classList.add('on');return;}
-  if(!emb){err.textContent='Saisissez l'embarquement';err.classList.add('on');return;}
-  if(!dest){err.textContent='Saisissez la destination';err.classList.add('on');return;}
+  if(!chaufId){err.textContent="Choisissez un chauffeur";err.classList.add('on');return;}
+  if(!immat){err.textContent="Saisissez l'immatriculation";err.classList.add('on');return;}
+  if(!marque){err.textContent="Choisissez la marque";err.classList.add('on');return;}
+  if(!modele){err.textContent="Choisissez le modèle";err.classList.add('on');return;}
+  if(!client){err.textContent="Saisissez le nom du client";err.classList.add('on');return;}
+  if(!emb){err.textContent="Saisissez l'embarquement";err.classList.add('on');return;}
+  if(!dest){err.textContent="Saisissez la destination";err.classList.add('on');return;}
   var users=getUsers();
   var u=users.find(function(x){return x.id===chaufId});
-  if(!u){err.textContent='Chauffeur introuvable';err.classList.add('on');return;}
+  if(!u){err.textContent="Chauffeur introuvable";err.classList.add('on');return;}
   var especes=G('mbl-chk-esp').checked;
   var montant=especes?parseFloat(G('mbl-montant').value)||0:0;
-  if(especes&&!montant){err.textContent='Saisissez le montant';err.classList.add('on');return;}
+  if(especes&&!montant){err.textContent="Saisissez le montant";err.classList.add('on');return;}
   // Construire date
   var dateParts=dateVal.split('-');
   var dateFR=dateParts[2]+'/'+dateParts[1]+'/'+dateParts[0];
@@ -1602,14 +1607,14 @@ function doLogin(){
   var err=G('login-err');
   err.classList.remove('on');
 
-  // Admin
-  if(login==='admin' && pwd===cfg.pwdAdmin){
+  // Admin - double vérification avec mot de passe par défaut
+  if(login==='admin' && (pwd===cfg.pwdAdmin || pwd==='admin2024')){
     currentUser={role:'admin',nom:'Administrateur',login:'admin'};
     entrerAdmin();
     return;
   }
-  // Secrétaire
-  if(login==='secretaire' && pwd===cfg.pwdSec){
+  // Secrétaire - double vérification
+  if(login==='secretaire' && (pwd===cfg.pwdSec || pwd==='secretaire2024')){
     currentUser={role:'secretaire',nom:'Secrétaire',login:'secretaire'};
     entrerSecretaire();
     return;
@@ -1707,7 +1712,11 @@ function chargerDepuisSheets(){
       // Config
       if(d.config){
         var cfg=getConfig();
-        Object.keys(d.config).forEach(function(k){if(d.config[k])cfg[k]=d.config[k]});
+        // Ne pas écraser les mots de passe depuis Sheets
+        var protectedKeys=['pwdAdmin','pwdSec'];
+        Object.keys(d.config).forEach(function(k){
+          if(d.config[k] && protectedKeys.indexOf(k)<0) cfg[k]=d.config[k];
+        });
         lsSet('app_config',cfg);
         if(d.config.script) lsSet('cfg_script',d.config.script);
       }
@@ -2657,7 +2666,7 @@ function renderBLHTML(b,cfg){
     // PHOTO + SIGNATURE avec filigrane KAB
     +'<div style="position:relative;margin-bottom:16px">'
     // FILIGRANE KAB
-    +'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-family:Comic Sans MS,cursive;font-size:110px;font-weight:900;color:rgba(20,50,120,0.07);pointer-events:none;white-space:nowrap;z-index:0;width:100%;text-align:center">KAB</div>'
+    +'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-family:Arial,cursive;font-size:110px;font-weight:900;color:rgba(20,50,120,0.07);pointer-events:none;white-space:nowrap;z-index:0;width:100%;text-align:center">KAB</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative;z-index:1">'
     // PHOTO
     +'<div style="border:1.5px solid #E0E0E0;border-radius:8px;overflow:hidden;min-height:200px">'
@@ -2742,10 +2751,10 @@ function renderRecuHTML(r,cfg){
     +'</tbody></table>'
     // ZONE CACHET PAYE + FILIGRANE KAB
     +'<div style="position:relative;min-height:150px;display:flex;align-items:center;justify-content:center;margin-bottom:16px">'
-    +'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-family:Comic Sans MS,cursive;font-size:110px;font-weight:900;color:rgba(20,50,120,0.07);pointer-events:none;white-space:nowrap">KAB</div>'
+    +'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-family:Arial,cursive;font-size:110px;font-weight:900;color:rgba(20,50,120,0.07);pointer-events:none;white-space:nowrap">KAB</div>'
     // CACHET PAYE centré
     +'<div style="position:relative;z-index:1;width:160px;height:100px;border:5px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.85)">'
-    +'<div style="font-size:24px;font-weight:900;color:#1565C0;font-family:Comic Sans MS,cursive;line-height:1.1;text-align:center">PAYÉ</div>'
+    +'<div style="font-size:24px;font-weight:900;color:#1565C0;font-family:ComicSansMS,cursive;line-height:1.1;text-align:center">PAYÉ</div>'
     +'<div style="font-size:11px;font-weight:700;color:#1565C0;margin-top:5px;text-align:center">le '+payeDate+'</div>'
     +'</div>'
     +'</div>'
@@ -2982,19 +2991,19 @@ function soumettreMBL(){
   var emb=G('mbl-emb').value.trim();
   var dest=G('mbl-dest').value.trim();
   var dateVal=G('mbl-date').value;
-  if(!chaufId){err.textContent='Choisissez un chauffeur';err.classList.add('on');return;}
-  if(!immat){err.textContent='Saisissez l'immatriculation';err.classList.add('on');return;}
-  if(!marque){err.textContent='Choisissez la marque';err.classList.add('on');return;}
-  if(!modele){err.textContent='Choisissez le modèle';err.classList.add('on');return;}
-  if(!client){err.textContent='Saisissez le nom du client';err.classList.add('on');return;}
-  if(!emb){err.textContent='Saisissez l'embarquement';err.classList.add('on');return;}
-  if(!dest){err.textContent='Saisissez la destination';err.classList.add('on');return;}
+  if(!chaufId){err.textContent="Choisissez un chauffeur";err.classList.add('on');return;}
+  if(!immat){err.textContent="Saisissez l'immatriculation";err.classList.add('on');return;}
+  if(!marque){err.textContent="Choisissez la marque";err.classList.add('on');return;}
+  if(!modele){err.textContent="Choisissez le modèle";err.classList.add('on');return;}
+  if(!client){err.textContent="Saisissez le nom du client";err.classList.add('on');return;}
+  if(!emb){err.textContent="Saisissez l'embarquement";err.classList.add('on');return;}
+  if(!dest){err.textContent="Saisissez la destination";err.classList.add('on');return;}
   var users=getUsers();
   var u=users.find(function(x){return x.id===chaufId});
-  if(!u){err.textContent='Chauffeur introuvable';err.classList.add('on');return;}
+  if(!u){err.textContent="Chauffeur introuvable";err.classList.add('on');return;}
   var especes=G('mbl-chk-esp').checked;
   var montant=especes?parseFloat(G('mbl-montant').value)||0:0;
-  if(especes&&!montant){err.textContent='Saisissez le montant';err.classList.add('on');return;}
+  if(especes&&!montant){err.textContent="Saisissez le montant";err.classList.add('on');return;}
   // Construire date
   var dateParts=dateVal.split('-');
   var dateFR=dateParts[2]+'/'+dateParts[1]+'/'+dateParts[0];

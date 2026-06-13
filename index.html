@@ -178,6 +178,7 @@ tr:nth-child(even) td{background:var(--gy)}
 .tn-badge{display:inline-block;background:var(--re);color:#fff;border-radius:5px;padding:1px 8px;font-size:11px;font-weight:900;margin-left:6px}
 .tn-badge.tw{background:#2563EB}
 .immat-inp{text-transform:uppercase;letter-spacing:2px;font-size:18px;font-weight:900;text-align:center;border-color:var(--bl)!important;background:#F0F6FF!important}
+.capitalize-first{text-transform:capitalize}
 
 /* DESTINATION BLOQUEE */
 .dest-locked{background:var(--gy);border:2px dashed var(--gy2);border-radius:11px;padding:12px;text-align:center;color:var(--mt);font-size:12px;font-weight:700;margin-bottom:12px}
@@ -1150,6 +1151,25 @@ function majModeles(){
 // ══════════════════════════════════════════════════════════
 //  GPS
 // ══════════════════════════════════════════════════════════
+// Capitaliser première lettre de chaque mot
+function capitalizeFirst(input){
+  input.addEventListener('input', function(){
+    var pos = this.selectionStart;
+    var val = this.value;
+    // Capitaliser première lettre de chaque mot
+    this.value = val.replace(/(?:^|\s|-)\S/g, function(c){ return c.toUpperCase(); });
+    this.setSelectionRange(pos, pos);
+  });
+}
+
+// Initialiser sur les champs concernés
+window.addEventListener('load', function(){
+  ['inp-client','inp-emb','inp-dest','inp-obs'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) capitalizeFirst(el);
+  });
+});
+
 function captureGPS(cb){
   if(!navigator.geolocation){cb({lat:'',lng:'',lieu:''});return}
   navigator.geolocation.getCurrentPosition(

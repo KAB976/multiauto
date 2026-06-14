@@ -1447,28 +1447,25 @@ function chargerPermissionsUI(){
 }
 
 function appliquerPermissionsSecretaire(){
-  var perms=getPermissions();
-  // Onglets nav secrétaire
-  var navBtns=document.querySelectorAll('#pg-secretaire .nav-btn');
-  navBtns.forEach(function(btn){
-    var txt=btn.textContent;
-    if(txt.indexOf('Reçus')>=0) btn.style.display=perms.recus?'':'none';
-    if(txt.indexOf('Clients')>=0) btn.style.display=perms.clients?'':'none';
-    if(txt.indexOf('Véhicules')>=0) btn.style.display=perms.vehicules?'':'none';
-    if(txt.indexOf('Statistiques')>=0) btn.style.display=perms.stats?'':'none';
-  });
-  // Bouton créer BL
-  var btnBL=document.querySelector('#sec-bl .btn-or');
-  if(btnBL) btnBL.style.display=perms.creerBL?'':'none';
-  // Boutons PDF/Télécharger
-  if(!perms.pdf){
-    document.querySelectorAll('.tbtn-bl').forEach(function(b){
-      if(b.textContent.indexOf('PDF')>=0) b.style.display='none';
+  try{
+    var perms=getPermissions();
+    // Onglets nav secrétaire - seulement dans le portail secrétaire
+    var navBtns=document.querySelectorAll('#pg-secretaire .nav-btn');
+    navBtns.forEach(function(btn){
+      var txt=btn.textContent||'';
+      if(txt.indexOf('Reçus')>=0) btn.style.display=perms.recus!==false?'':'none';
+      if(txt.indexOf('Clients')>=0) btn.style.display=perms.clients!==false?'':'none';
+      if(txt.indexOf('Véhicules')>=0) btn.style.display=perms.vehicules!==false?'':'none';
+      if(txt.indexOf('Statistiques')>=0) btn.style.display=perms.stats!==false?'':'none';
+      if(txt.indexOf('Camion')>=0) btn.style.display=perms.camionTmp!==false?'':'none';
     });
-  }
-  // Changement camion temporaire dans secrétaire
-  var secCamCard=G('sec-camion-tmp-card');
-  if(secCamCard) secCamCard.style.display=perms.camionTmp?'':'none';
+    // Bouton créer BL - seulement dans le portail secrétaire
+    var btnBL=document.querySelector('#pg-secretaire #sec-bl .btn-or');
+    if(btnBL) btnBL.style.display=perms.creerBL!==false?'':'none';
+    // Onglet camion temp
+    var navCam=G('sec-nav-camion');
+    if(navCam) navCam.style.display=perms.camionTmp!==false?'':'none';
+  }catch(e){console.warn('Permissions sec:',e);}
 }
 
 // ══════════════════════════════════════════════════════
@@ -3479,28 +3476,25 @@ function chargerPermissionsUI(){
 }
 
 function appliquerPermissionsSecretaire(){
-  var perms=getPermissions();
-  // Onglets nav secrétaire
-  var navBtns=document.querySelectorAll('#pg-secretaire .nav-btn');
-  navBtns.forEach(function(btn){
-    var txt=btn.textContent;
-    if(txt.indexOf('Reçus')>=0) btn.style.display=perms.recus?'':'none';
-    if(txt.indexOf('Clients')>=0) btn.style.display=perms.clients?'':'none';
-    if(txt.indexOf('Véhicules')>=0) btn.style.display=perms.vehicules?'':'none';
-    if(txt.indexOf('Statistiques')>=0) btn.style.display=perms.stats?'':'none';
-  });
-  // Bouton créer BL
-  var btnBL=document.querySelector('#sec-bl .btn-or');
-  if(btnBL) btnBL.style.display=perms.creerBL?'':'none';
-  // Boutons PDF/Télécharger
-  if(!perms.pdf){
-    document.querySelectorAll('.tbtn-bl').forEach(function(b){
-      if(b.textContent.indexOf('PDF')>=0) b.style.display='none';
+  try{
+    var perms=getPermissions();
+    // Onglets nav secrétaire - seulement dans le portail secrétaire
+    var navBtns=document.querySelectorAll('#pg-secretaire .nav-btn');
+    navBtns.forEach(function(btn){
+      var txt=btn.textContent||'';
+      if(txt.indexOf('Reçus')>=0) btn.style.display=perms.recus!==false?'':'none';
+      if(txt.indexOf('Clients')>=0) btn.style.display=perms.clients!==false?'':'none';
+      if(txt.indexOf('Véhicules')>=0) btn.style.display=perms.vehicules!==false?'':'none';
+      if(txt.indexOf('Statistiques')>=0) btn.style.display=perms.stats!==false?'':'none';
+      if(txt.indexOf('Camion')>=0) btn.style.display=perms.camionTmp!==false?'':'none';
     });
-  }
-  // Changement camion temporaire dans secrétaire
-  var secCamCard=G('sec-camion-tmp-card');
-  if(secCamCard) secCamCard.style.display=perms.camionTmp?'':'none';
+    // Bouton créer BL - seulement dans le portail secrétaire
+    var btnBL=document.querySelector('#pg-secretaire #sec-bl .btn-or');
+    if(btnBL) btnBL.style.display=perms.creerBL!==false?'':'none';
+    // Onglet camion temp
+    var navCam=G('sec-nav-camion');
+    if(navCam) navCam.style.display=perms.camionTmp!==false?'':'none';
+  }catch(e){console.warn('Permissions sec:',e);}
 }
 
 // ══════════════════════════════════════════════════════

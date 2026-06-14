@@ -342,7 +342,7 @@ tr:nth-child(even) td{background:var(--gy)}
     <div class="card">
       <div class="card-title"><span class="ico">🚗</span> Véhicule</div>
       <label class="fl">Immatriculation <span class="req-b">Obligatoire</span></label>
-      <input class="inp immat-inp mb12" type="text" id="inp-immat" placeholder="FA-196-DV" maxlength="10">
+      <input class="inp immat-inp mb12" type="text" id="inp-immat" placeholder="ET-914-WV" maxlength="10">
       <div class="row2">
         <div>
           <label class="fl">Marque <span class="req-b">Obligatoire</span></label>
@@ -909,7 +909,7 @@ tr:nth-child(even) td{background:var(--gy)}
     <div class="row2">
       <div>
         <label class="fl">Immatriculation <span class="req-b">Obligatoire</span></label>
-        <input class="inp immat-inp" type="text" id="mbl-immat" placeholder="FA-196-DV" maxlength="10">
+        <input class="inp immat-inp" type="text" id="mbl-immat" placeholder="ET-914-WV" maxlength="10">
       </div>
       <div>
         <label class="fl">Marque <span class="req-b">Obligatoire</span></label>
@@ -2267,15 +2267,58 @@ function secLoadBL(){
 
 function renderBLTable(bls,tbodyId,isAdmin){
   var tb=G(tbodyId);
-  if(!bls.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Aucun bon de livraison trouvé</td></tr>';return}
-  tb.innerHTML=bls.map(function(b){
+  if(!bls||!bls.length){
+    tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Aucun bon de livraison trouvé</td></tr>';
+    return;
+  }
+  bls=bls.slice().sort(function(a,b2){
+    var da=parseLocalDate(formatDateFR(String(a.date_bl||'')));
+    var db=parseLocalDate(formatDateFR(String(b2.date_bl||'')));
+    if(da&&db) return db.getTime()-da.getTime();
+    return 0;
+  });
+  blDataStore={};
+  tb.innerHTML=bls.map(function(b,i){
+    var bid='b'+i;
+    blDataStore[bid]=b;
+    var dateFR=formatDateFR(String(b.date_bl||''));
+    var heure=b.heure_bl?String(b.heure_bl):'';
+    var dateAff=dateFR+(heure?' — '+heure:'');
     var tnBadge=b.tn_tw?'<span class="badge bdg-'+(b.tn_tw==='TW'?'bl':'re')+'">'+b.tn_tw+'</span>':'<span class="badge bdg-gy">—</span>';
-    var paiement=b.montant_especes?b.montant_especes+' € ('+b.recu_num+')':'—';
-    var btns='<button class="tbtn tbtn-gr" onclick="voirBL('+JSON.stringify(b).replace(/"/g,"'")+')">👁 Voir</button> <button class="tbtn tbtn-bl" onclick="genBLPDF('+JSON.stringify(b).replace(/"/g,"'")+')" >📄 PDF</button>';
-    if(isAdmin) btns+=' <button class="tbtn tbtn-re" onclick="supprimerBL(\''+b.bon_num+'\')">🗑</button>';
-    return '<tr><td style="font-family:monospace;font-weight:700">'+b.bon_num+'</td><td>'+b.date_bl+' '+b.heure_bl+'</td><td>'+tnBadge+'</td><td>'+b.chauffeur_nom+'</td><td>'+b.nom_client+'</td><td>'+b.marque+' '+b.modele+'</td><td>'+b.lieu_embarquement+' → '+b.destination+'</td><td>'+paiement+'</td><td>'+btns+'</td></tr>';
+    var paiement=b.montant_especes?(parseFloat(b.montant_especes||0).toFixed(2)+' €'):'—';
+    var del=isAdmin?'<button class="tbtn tbtn-re bl-del" data-num="'+b.bon_num+'">🗑</button>':'';
+    return '<tr>'
+      +'<td style="font-family:monospace;font-weight:700;white-space:nowrap">'+b.bon_num+'</td>'
+      +'<td style="white-space:nowrap">'+dateAff+'</td>'
+      +'<td>'+tnBadge+'</td>'
+      +'<td>'+b.chauffeur_nom+'</td>'
+      +'<td>'+b.nom_client+'</td>'
+      +'<td>'+b.marque+' '+b.modele+'</td>'
+      +'<td style="white-space:nowrap">'+b.lieu_embarquement+' → '+b.destination+'</td>'
+      +'<td>'+paiement+'</td>'
+      +'<td style="white-space:nowrap">'
+        +'<button class="tbtn tbtn-gr bl-voir" data-id="'+bid+'">👁 Voir</button> '
+        +'<button class="tbtn tbtn-or bl-imp" data-id="'+bid+'">🖨️</button> '
+        +'<button class="tbtn tbtn-bl bl-dl" data-id="'+bid+'">⬇️</button> '
+        +del
+      +'</td>'
+      +'</tr>';
   }).join('');
+  // Event listeners
+  tb.querySelectorAll('.bl-voir').forEach(function(btn){
+    btn.addEventListener('click',function(){voirBL(blDataStore[this.dataset.id]);});
+  });
+  tb.querySelectorAll('.bl-imp').forEach(function(btn){
+    btn.addEventListener('click',function(){imprimerDoc(blDataStore[this.dataset.id],'bl');});
+  });
+  tb.querySelectorAll('.bl-dl').forEach(function(btn){
+    btn.addEventListener('click',function(){telechargerDoc(blDataStore[this.dataset.id],'bl');});
+  });
+  tb.querySelectorAll('.bl-del').forEach(function(btn){
+    btn.addEventListener('click',function(){supprimerBL(this.dataset.num);});
+  });
 }
+
 
 function renderStatsBL(bls,statId){
   var total=bls.length;
@@ -2299,13 +2342,51 @@ function secLoadRecus(){
 
 function renderRecusTable(recus,tbodyId,isAdmin){
   var tb=G(tbodyId);
-  if(!recus.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Aucun reçu trouvé</td></tr>';return}
-  tb.innerHTML=recus.map(function(r){
-    var btns='<button class="tbtn tbtn-bl" onclick="genRecuPDF('+JSON.stringify(r).replace(/"/g,"'")+')" >📄 PDF</button>';
-    if(isAdmin) btns+=' <button class="tbtn tbtn-re" onclick="supprimerRecu(\''+r.recu_num+'\')">🗑</button>';
-    return '<tr><td style="font-family:monospace;font-weight:700;color:var(--or)">'+r.recu_num+'</td><td>'+r.date_bl+'</td><td>'+r.chauffeur_nom+'</td><td>'+r.nom_client+'</td><td><strong>'+parseFloat(r.montant_especes).toFixed(2)+' €</strong></td><td style="font-family:monospace">'+r.bon_num+'</td><td>'+btns+'</td></tr>';
+  if(!recus||!recus.length){
+    tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Aucun reçu trouvé</td></tr>';
+    return;
+  }
+  recus=recus.slice().sort(function(a,b){
+    var da=parseLocalDate(formatDateFR(String(a.date_bl||'')));
+    var db=parseLocalDate(formatDateFR(String(b.date_bl||'')));
+    if(da&&db) return db.getTime()-da.getTime();
+    return 0;
+  });
+  rcDataStore={};
+  tb.innerHTML=recus.map(function(r,i){
+    var rid='r'+i;
+    rcDataStore[rid]=r;
+    var dateFR=formatDateFR(String(r.date_bl||''));
+    var del=isAdmin?'<button class="tbtn tbtn-re rc-del" data-num="'+r.recu_num+'">🗑</button>':'';
+    return '<tr>'
+      +'<td style="font-family:monospace;font-weight:700;color:var(--or);white-space:nowrap">'+r.recu_num+'</td>'
+      +'<td style="white-space:nowrap">'+dateFR+'</td>'
+      +'<td>'+r.chauffeur_nom+'</td>'
+      +'<td>'+r.nom_client+'</td>'
+      +'<td><strong>'+parseFloat(r.montant_especes||0).toFixed(2)+' €</strong></td>'
+      +'<td style="font-family:monospace">'+r.bon_num+'</td>'
+      +'<td style="white-space:nowrap">'
+        +'<button class="tbtn tbtn-gr rc-voir" data-id="'+rid+'">👁 Voir</button> '
+        +'<button class="tbtn tbtn-or rc-imp" data-id="'+rid+'">🖨️</button> '
+        +'<button class="tbtn tbtn-bl rc-dl" data-id="'+rid+'">⬇️</button> '
+        +del
+      +'</td>'
+      +'</tr>';
   }).join('');
+  tb.querySelectorAll('.rc-voir').forEach(function(btn){
+    btn.addEventListener('click',function(){voirRecu(rcDataStore[this.dataset.id]);});
+  });
+  tb.querySelectorAll('.rc-imp').forEach(function(btn){
+    btn.addEventListener('click',function(){imprimerDoc(rcDataStore[this.dataset.id],'recu');});
+  });
+  tb.querySelectorAll('.rc-dl').forEach(function(btn){
+    btn.addEventListener('click',function(){telechargerDoc(rcDataStore[this.dataset.id],'recu');});
+  });
+  tb.querySelectorAll('.rc-del').forEach(function(btn){
+    btn.addEventListener('click',function(){supprimerRecu(this.dataset.num);});
+  });
 }
+
 
 function secLoadStats(){
   loader(true,'Calcul...');
@@ -2751,6 +2832,16 @@ function saveConfig(){
 // ══════════════════════════════════════════════════════════
 var currentPDFData = null;
 
+// Stores pour éviter les problèmes d'apostrophes dans onclick
+var blDataStore={};
+var rcDataStore={};
+function voirBLById(id){var b=blDataStore[id];if(b)voirBL(b);else showToast('Données introuvables');}
+function voirRecuById(id){var r=rcDataStore[id];if(r)voirRecu(r);else showToast('Données introuvables');}
+function imprimerBLById(id){var b=blDataStore[id];if(b)imprimerDoc(b,'bl');else showToast('Données introuvables');}
+function imprimerRecuById(id){var r=rcDataStore[id];if(r)imprimerDoc(r,'recu');else showToast('Données introuvables');}
+function telechargerBLById(id){var b=blDataStore[id];if(b)telechargerDoc(b,'bl');else showToast('Données introuvables');}
+function telechargerRecuById(id){var r=rcDataStore[id];if(r)telechargerDoc(r,'recu');else showToast('Données introuvables');}
+
 function voirRecu(r){
   currentPDFData={type:'recu',data:r};
   var cfg=getConfig();
@@ -2774,10 +2865,19 @@ function telechargerDoc(data,type){
   var cfg=getConfig();
   var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
   var nom=type==='bl'?data.bon_num:data.recu_num;
-  var win=window.open('','_blank','width=900,height=750');
-  if(!win){showToast('Autorisez les popups Chrome');return;}
-  win.document.write(getPrintHTML(html,nom,true));
-  win.document.close();
+  // Créer un blob HTML et télécharger directement
+  var fullHtml='<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+nom+'</title>'
+    +'<style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:0}@page{margin:8mm;size:A4 portrait}@media print{body{margin:0}}</style>'
+    +'</head><body>'+html+'</body></html>';
+  var blob=new Blob([fullHtml],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download=nom+'.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+  showToast('✅ '+nom+' téléchargé ! Ouvrez avec Chrome puis Imprimer → Enregistrer en PDF');
 }
 
 function getPrintHTML(html,nom,showButtons){
@@ -2852,7 +2952,9 @@ function renderBLHTML(b,cfg){
   var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');
   var contact=(cfg.tel||'')+(cfg.email?' • '+cfg.email:'');
 
-  return '<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:800px;margin:0 auto;font-size:13px;color:#1A1A1A">'
+  return '<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:800px;margin:0 auto;font-size:13px;color:#1A1A1A;position:relative">'
+    // SIGLE KAB en filigrane diagonal sur toute la page
+    +'<div style="position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-family:ComicSansMS,Arial,cursive;font-size:140px;font-weight:900;color:rgba(20,50,120,0.055);pointer-events:none;white-space:nowrap;user-select:none;z-index:0;width:100%;text-align:center">KAB</div>'
 
     // ── EN-TÊTE ──
     +'<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:4px solid #E8501A">'
@@ -2959,8 +3061,6 @@ function renderBLHTML(b,cfg){
       :'<div style="color:#CCC;font-size:12px;text-align:center;padding:20px">✍️<br>Aucune signature</div>')
     +'</div>'
     +'</div>'
-    // Filigrane KAB
-    +'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-40%) rotate(-35deg);font-family:ComicSansMS,Arial,cursive;font-size:130px;font-weight:900;color:rgba(20,50,120,0.055);pointer-events:none;white-space:nowrap;user-select:none;z-index:0">KAB</div>'
     +'</div>'
 
     // ── PIED DE PAGE ──
@@ -2998,7 +3098,8 @@ function renderRecuHTML(r,cfg){
   var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');
   var contact=(cfg.tel||'')+(cfg.email?' • '+cfg.email:'');
 
-  return '<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:700px;margin:0 auto;font-size:13px;color:#1A1A1A">'
+  return '<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:700px;margin:0 auto;font-size:13px;color:#1A1A1A;position:relative">'
+    +'<div style="position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-family:ComicSansMS,Arial,cursive;font-size:140px;font-weight:900;color:rgba(20,50,120,0.055);pointer-events:none;white-space:nowrap;user-select:none;z-index:0;width:100%;text-align:center">KAB</div>'
 
     // ── EN-TÊTE ──
     +'<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:4px solid #E8501A">'

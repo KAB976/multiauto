@@ -1089,7 +1089,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhzk4uWQvK8kNenVxsbEJ9EvJkCuuxYH5Vc93xFsL9mdEoDzFvUlHU0g1kkq4uIWKF/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxonRrE1g8IPFEwxO-zRTWNk7724LCv51NZIAkVnugsGG1M1WO4v2T0MmZgnKSVl7O7YQ/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1181,6 +1181,10 @@ function formatDateFR(str){
 }
 
 var chr39="'";
+
+function ouvrirGPS(lat,lng,ville){
+  window.open('https://www.google.com/maps?q='+lat+','+lng,'_blank');
+}
 
 function voirGPS(g){
   var url='https://www.google.com/maps?q='+g.lat+','+g.lng;
@@ -1323,7 +1327,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbyhzk4uWQvK8kNenVxsbEJ9EvJkCuuxYH5Vc93xFsL9mdEoDzFvUlHU0g1kkq4uIWKF/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbxonRrE1g8IPFEwxO-zRTWNk7724LCv51NZIAkVnugsGG1M1WO4v2T0MmZgnKSVl7O7YQ/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -1532,11 +1536,22 @@ function mblPhotoCapture(e){
   var file=e.target.files[0]; if(!file) return;
   var reader=new FileReader();
   reader.onload=function(ev){
-    mblPhotoData=ev.target.result;
-    G('mbl-photo-prev').src=mblPhotoData;
-    G('mbl-photo-prev').style.display='block';
-    G('mbl-pz-inner').style.display='none';
-    G('mbl-photo-zone').classList.add('ok');
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      var MAX=900;
+      var w=img.width, h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      mblPhotoData=canvas.toDataURL('image/jpeg',0.75);
+      G('mbl-photo-prev').src=mblPhotoData;
+      G('mbl-photo-prev').style.display='block';
+      G('mbl-pz-inner').style.display='none';
+      G('mbl-photo-zone').classList.add('ok');
+    };
+    img.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -1975,12 +1990,25 @@ function photoCapture(e){
   if(!file) return;
   var reader=new FileReader();
   reader.onload=function(ev){
-    photoData=ev.target.result;
-    G('photo-prev').src=photoData;
-    G('photo-prev').style.display='block';
-    G('pz-inner').style.display='none';
-    G('photo-zone').classList.add('ok');
-    G('photo-clear-btn').style.display='block';
+    // Compresser l'image avant envoi
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      var MAX=900;
+      var w=img.width, h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+      canvas.width=w; canvas.height=h;
+      var ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      photoData=canvas.toDataURL('image/jpeg',0.75);
+      G('photo-prev').src=photoData;
+      G('photo-prev').style.display='block';
+      G('pz-inner').style.display='none';
+      G('photo-zone').classList.add('ok');
+      G('photo-clear-btn').style.display='block';
+    };
+    img.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -2554,27 +2582,39 @@ function admLoadRecus(){
 
 function admLoadGPS(){
   loader(true,'Chargement GPS...');
-  apiCall({action:'getGPS',d1:G('adm-gps-d1').value,d2:G('adm-gps-d2').value,chauffeur:G('adm-gps-chauf').value,bon_num:G('adm-gps-bl').value},function(data,err){
+  apiCall({action:'getGPS',d1:G('adm-gps-d1').value||'',d2:G('adm-gps-d2').value||'',chauffeur:G('adm-gps-chauf').value||'',bon_num:G('adm-gps-bl').value||''},function(data,err){
     loader(false);
     var tb=G('adm-gps-body');
-    if(err||!data){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--re)">Erreur chargement</td></tr>';return}
+    if(err||!data){
+      tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--re)">Erreur de chargement</td></tr>';
+      return;
+    }
     var gps=data.gps||[];
-    gps=filtrerParDate(gps,'date_bl',G('adm-gps-d1').value,G('adm-gps-d2').value);
-    var chauf=G('adm-gps-chauf').value;
-    if(chauf) gps=gps.filter(function(g){return g.chauffeur_nom===chauf});
-    var bonNum=G('adm-gps-bl').value;
-    if(bonNum) gps=gps.filter(function(g){return g.bon_num===bonNum});
-    if(!gps.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Aucune donnée GPS trouvée</td></tr>';return}
+    if(!gps.length){
+      tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Aucune donnée GPS. Essayez sans filtres.</td></tr>';
+      return;
+    }
+    gps=gps.slice().sort(function(a,b2){
+      var da=parseLocalDate(formatDateFR(String(a.date_bl||'')));
+      var db=parseLocalDate(formatDateFR(String(b2.date_bl||'')));
+      if(da&&db) return db.getTime()-da.getTime();
+      return 0;
+    });
     tb.innerHTML=gps.map(function(g){
-      var mapLink=(g.gps_emb_lat&&g.gps_dest_lat)?'<a class="gps-map-link" href="https://www.google.com/maps/dir/'+g.gps_emb_lat+','+g.gps_emb_lng+'/'+g.gps_dest_lat+','+g.gps_dest_lng+'" target="_blank">🗺️ Trajet</a>':'—';
-      var dateGPS=formatDateFR(g.date_bl);
-      return (function(){
-      var embVille=g.lieu_embarquement||g.gps_emb_lieu||'—';
-      var destVille=g.destination||g.gps_dest_lieu||'—';
-      var btnEmb=g.gps_emb_lat?'<button class="tbtn tbtn-bl" style="margin-top:4px;font-size:9px" onclick="voirGPS({lat:'+chr39+g.gps_emb_lat+chr39+',lng:'+chr39+g.gps_emb_lng+chr39+',ville:'+chr39+embVille+chr39+'})">📍 GPS</button>':'';
-      var btnDest=g.gps_dest_lat?'<button class="tbtn tbtn-bl" style="margin-top:4px;font-size:9px" onclick="voirGPS({lat:'+chr39+g.gps_dest_lat+chr39+',lng:'+chr39+g.gps_dest_lng+chr39+',ville:'+chr39+destVille+chr39+'})">📍 GPS</button>':'';
-      return '<tr><td style="font-family:monospace;font-weight:700">'+g.bon_num+'</td><td>'+dateGPS+'</td><td>'+g.chauffeur_nom+'</td><td><strong>'+embVille+'</strong><br>'+btnEmb+'</td><td><strong>'+destVille+'</strong><br>'+btnDest+'</td><td>'+(g.duree_min?g.duree_min+' min':'—')+'</td><td>'+mapLink+'</td></tr>';
-    })();
+      var dateFR=formatDateFR(String(g.date_bl||''));
+      var embVille=g.lieu_embarquement||'—';
+      var destVille=g.destination||'—';
+      var hasGPS=g.gps_emb_lat&&g.gps_emb_lng&&g.gps_dest_lat&&g.gps_dest_lng;
+      var carte=hasGPS?'<a class="tbtn tbtn-bl" href="https://www.google.com/maps/dir/'+g.gps_emb_lat+','+g.gps_emb_lng+'/'+g.gps_dest_lat+','+g.gps_dest_lng+'" target="_blank">🗺️ Carte</a>':'—';
+      return '<tr>'
+        +'<td style="font-family:monospace;font-weight:700">'+g.bon_num+'</td>'
+        +'<td>'+dateFR+'</td>'
+        +'<td>'+g.chauffeur_nom+'</td>'
+        +'<td><strong>'+embVille+'</strong>'+(g.gps_emb_lat?'<br><small style="color:var(--mt)">'+g.gps_emb_lat+', '+g.gps_emb_lng+'</small>':'')+'</td>'
+        +'<td><strong>'+destVille+'</strong>'+(g.gps_dest_lat?'<br><small style="color:var(--mt)">'+g.gps_dest_lat+', '+g.gps_dest_lng+'</small>':'')+'</td>'
+        +'<td>'+(g.duree_min?g.duree_min+' min':'—')+'</td>'
+        +'<td>'+carte+'</td>'
+        +'</tr>';
     }).join('');
   });
 }
@@ -3503,11 +3543,22 @@ function mblPhotoCapture(e){
   var file=e.target.files[0]; if(!file) return;
   var reader=new FileReader();
   reader.onload=function(ev){
-    mblPhotoData=ev.target.result;
-    G('mbl-photo-prev').src=mblPhotoData;
-    G('mbl-photo-prev').style.display='block';
-    G('mbl-pz-inner').style.display='none';
-    G('mbl-photo-zone').classList.add('ok');
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      var MAX=900;
+      var w=img.width, h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      mblPhotoData=canvas.toDataURL('image/jpeg',0.75);
+      G('mbl-photo-prev').src=mblPhotoData;
+      G('mbl-photo-prev').style.display='block';
+      G('mbl-pz-inner').style.display='none';
+      G('mbl-photo-zone').classList.add('ok');
+    };
+    img.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }

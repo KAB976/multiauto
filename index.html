@@ -3255,7 +3255,7 @@ function renderBLHTML(b,cfg){
 
   // PHOTO + SIGNATURE
   h+='<div style="background:#E8501A;color:#fff;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;border-radius:3px">PHOTO DU VÉHICULE / SIGNATURE DU CLIENT</div>';
-  h+='<div style="display:flex;gap:14px;margin-bottom:2px">';
+  h+='<div style="display:flex;gap:14px;margin-bottom:8px">';
   h+='<div style="flex:1;min-height:100px;background:#FAFAFA;border:1px solid #E9ECEF;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px">';
   h+=(photoSrc?'<img src="'+photoSrc+'" style="max-width:100%;max-height:100px;object-fit:contain;border-radius:4px;image-orientation:from-image" alt="Photo">':'<div style="text-align:center;color:#CCC"><div style="font-size:28px">📷</div><div style="font-size:11px;margin-top:4px">Aucune photo</div></div>');
   h+='</div>';
@@ -3309,82 +3309,83 @@ function renderRecuHTML(r,cfg){
   var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');
   var contact=(cfg.tel||'')+(cfg.email?' • '+cfg.email:'');
 
-  var h='';
-  h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:700px;margin:0 auto;font-size:11px;color:#1A1A1A;display:flex;flex-direction:column;min-height:297mm">';
+  var h='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:700px;margin:0 auto;font-size:11px;color:#1A1A1A">';
 
   // EN-TÊTE
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px;border-bottom:4px solid #E8501A">';
-  h+=(logoG?'<img src="'+logoG+'" style="max-width:90px;max-height:60px;object-fit:contain" alt="">':'<div style="width:110px"></div>');
-  h+='<div style="text-align:center;flex:1;padding:0 16px">';
-  h+='<div style="font-size:11px;font-weight:700;color:#718096;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px">REÇU DE PAIEMENT — N°</div>';
-  h+='<div style="font-size:20px;font-weight:900;color:#E8501A;font-family:monospace;letter-spacing:3px">'+r.recu_num+'</div>';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:3px solid #E8501A">';
+  h+=(logoG?'<img src="'+logoG+'" style="max-width:80px;max-height:55px;object-fit:contain" alt="">':'<div style="width:80px"></div>');
+  h+='<div style="text-align:center;flex:1;padding:0 12px">';
+  h+='<div style="font-size:9px;font-weight:700;color:#718096;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">REÇU DE PAIEMENT — N°</div>';
+  h+='<div style="font-size:18px;font-weight:900;color:#E8501A;font-family:monospace;letter-spacing:2px">'+r.recu_num+'</div>';
   h+='</div>';
-  h+=(logoD?'<img src="'+logoD+'" style="max-width:130px;max-height:60px;object-fit:contain" alt="">':'<div style="width:150px"></div>');
+  h+=(logoD?'<img src="'+logoD+'" style="max-width:120px;max-height:55px;object-fit:contain" alt="">':'<div style="width:120px"></div>');
   h+='</div>';
 
   // DATE + BL
-  h+='<div style="display:flex;justify-content:space-between;padding:4px 16px;background:#F8F9FA;font-size:12px;border-bottom:1px solid #E9ECEF">';
-  h+='<div><span style="font-weight:700;color:#718096;font-size:10px;text-transform:uppercase">Date : </span><span style="font-weight:600">'+dateAff+'</span></div>';
-  h+='<div><span style="font-weight:700;color:#718096;font-size:10px;text-transform:uppercase">Bon de livraison : </span><span style="font-family:monospace;font-weight:700">'+r.bon_num+'</span></div>';
+  h+='<div style="display:flex;justify-content:space-between;padding:4px 16px;background:#F8F9FA;font-size:10px;border-bottom:1px solid #E9ECEF">';
+  h+='<div><span style="font-weight:700;color:#718096;text-transform:uppercase;font-size:9px">Date : </span><span style="font-weight:600">'+dateAff+'</span></div>';
+  h+='<div><span style="font-weight:700;color:#718096;text-transform:uppercase;font-size:9px">Bon de livraison : </span><span style="font-family:monospace;font-weight:700">'+r.bon_num+'</span></div>';
   h+='</div>';
-
-  // CORPS flex:1
-  h+='<div style="flex:1;padding:6px 16px">';
 
   // CLIENT
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
-  h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:130px;flex-shrink:0">Reçu de :</span>';
+  h+='<div style="padding:6px 16px;border-bottom:1px solid #F0F0F0">';
+  h+='<div style="display:flex;align-items:baseline;margin-bottom:3px">';
+  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:110px;flex-shrink:0">Reçu de :</span>';
   h+='<span style="font-size:13px;font-weight:900">'+r.nom_client+'</span>';
   h+='</div>';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:5px">';
-  h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:130px;flex-shrink:0">Téléphone :</span>';
+  h+='<div style="display:flex;align-items:baseline">';
+  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:110px;flex-shrink:0">Téléphone :</span>';
   h+='<span>'+(r.tel_client||'—')+'</span>';
+  h+='</div>';
   h+='</div>';
 
   // MONTANT
-  h+='<div style="background:#FFF8E1;border:2px solid #D4A800;border-radius:10px;padding:8px;text-align:center;margin-bottom:5px">';
-  h+='<div style="font-size:10px;font-weight:700;color:#7A5C00;text-transform:uppercase;letter-spacing:3px;margin-bottom:4px">MONTANT REÇU EN ESPÈCES</div>';
-  h+='<div style="font-size:24px;font-weight:900;color:#2D3748;margin-bottom:4px">'+montant.toFixed(2)+' €</div>';
-  h+='<div style="font-size:12px;color:#7A5C00;font-style:italic">Soit : '+montantEnLettres(montant)+'</div>';
+  h+='<div style="margin:8px 16px;background:#FFF8E1;border:2px solid #D4A800;border-radius:8px;padding:10px;text-align:center">';
+  h+='<div style="font-size:9px;font-weight:700;color:#7A5C00;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px">MONTANT REÇU EN ESPÈCES</div>';
+  h+='<div style="font-size:24px;font-weight:900;color:#2D3748;margin-bottom:3px">'+montant.toFixed(2)+' €</div>';
+  h+='<div style="font-size:10px;color:#7A5C00;font-style:italic">Soit : '+montantEnLettres(montant)+'</div>';
   h+='</div>';
 
   // PRESTATION
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
-  h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:150px;flex-shrink:0">Pour la prestation :</span>';
+  h+='<div style="padding:4px 16px">';
+  h+='<div style="display:flex;align-items:baseline;margin-bottom:3px;padding-bottom:3px;border-bottom:1px solid #F0F0F0">';
+  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;width:140px;flex-shrink:0">Pour la prestation :</span>';
   h+='<span>Transport / dépannage du véhicule <strong>'+r.marque+' '+r.modele+'</strong></span>';
   h+='</div>';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
-  h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:150px;flex-shrink:0">Trajet :</span>';
+  h+='<div style="display:flex;align-items:baseline;margin-bottom:3px;padding-bottom:3px;border-bottom:1px solid #F0F0F0">';
+  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;width:140px;flex-shrink:0">Trajet :</span>';
   h+='<span><strong>'+r.lieu_embarquement+'</strong> → <strong>'+r.destination+'</strong></span>';
   h+='</div>';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:5px">';
-  h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:150px;flex-shrink:0">Encaissé par :</span>';
+  h+='<div style="display:flex;align-items:baseline">';
+  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;width:140px;flex-shrink:0">Encaissé par :</span>';
   h+='<span style="font-weight:700">'+r.chauffeur_nom+'</span>';
+  h+='</div>';
   h+='</div>';
 
   // CACHET PAYÉ + FILIGRANE KAB
-  h+='<div style="position:relative;min-height:130px;display:flex;align-items:center;justify-content:flex-end;padding-right:30px">';
+  h+='<div style="position:relative;height:110px;display:flex;align-items:center;justify-content:flex-end;padding-right:30px;overflow:hidden">';
   h+='<div style="position:absolute;top:50%;left:38%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Georgia,serif;font-style:italic;font-size:70px;font-weight:900;color:rgba(59,159,212,0.07);pointer-events:none;white-space:nowrap;user-select:none">KAB</div>';
-  h+='<div style="position:relative;z-index:1;width:120px;height:72px;border:5px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.95)">';
-  h+='<div style="font-size:17px;font-weight:900;color:#1565C0;line-height:1.1;text-align:center;letter-spacing:3px">P A Y É</div>';
-  h+='<div style="font-size:10px;font-weight:700;color:#1565C0;margin-top:2px;text-align:center">le '+dateAff+'</div>';
+  h+='<div style="position:relative;z-index:1;width:115px;height:70px;border:4px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.95)">';
+  h+='<div style="font-size:16px;font-weight:900;color:#1565C0;line-height:1.1;text-align:center;letter-spacing:2px">P A Y É</div>';
+  h+='<div style="font-size:9px;font-weight:700;color:#1565C0;margin-top:3px;text-align:center">le '+dateAff+'</div>';
   h+='</div>';
   h+='</div>';
-  h+='</div>'; // fin corps
 
-  // PIED DE PAGE - en bas
-  h+='<div style="border-top:3px solid #E8501A;padding:5px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:auto">';
+  // PIED DE PAGE
+  h+='<div style="border-top:2px solid #E8501A;padding:6px 16px;display:flex;justify-content:space-between;align-items:center">';
   h+='<div style="text-align:center;flex:1">';
-  h+='<div style="font-size:12px;font-weight:900;color:#2D3748">'+nom+'</div>';
-  h+='<div style="font-size:10px;color:#718096;margin-top:2px">'+adresse+(contact?' • '+contact:'')+'</div>';
-  h+='<div style="font-size:9px;color:#AAA;margin-top:1px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>';
+  h+='<div style="font-size:11px;font-weight:900;color:#2D3748">'+nom+'</div>';
+  h+='<div style="font-size:9px;color:#718096;margin-top:1px">'+adresse+(contact?' • '+contact:'')+'</div>';
+  h+='<div style="font-size:8px;color:#AAA;margin-top:1px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>';
   h+='</div>';
-  h+='<div style="font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:13px;color:#3B9FD4;padding-left:14px;white-space:nowrap">Auteur : KAB</div>';
+  h+='<div style="font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:12px;color:#3B9FD4;padding-left:12px;white-space:nowrap">Auteur : KAB</div>';
   h+='</div>';
 
   h+='</div>';
   return h;
 }
+
+
 
 
 

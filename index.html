@@ -1090,7 +1090,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0STKQ0nC42UZpgQpn0Ut4ujr6iqKNcnDdje2R5pSblAmpqJ5MEi-ZYfAIYkKgcJWlEw/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx69CWF7PD1GLdoUWOUuo9el66GcCinjmH0ut3_6qt_1K7uzVHrNDs8twWg7VVcJoIDhg/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1389,7 +1389,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycby0STKQ0nC42UZpgQpn0Ut4ujr6iqKNcnDdje2R5pSblAmpqJ5MEi-ZYfAIYkKgcJWlEw/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbx69CWF7PD1GLdoUWOUuo9el66GcCinjmH0ut3_6qt_1K7uzVHrNDs8twWg7VVcJoIDhg/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -2454,7 +2454,9 @@ function secLoadRecus(){
     recus.sort(function(a,b){
       var ta=parseDateHeure(a.date_bl,a.heure_bl);
       var tb=parseDateHeure(b.date_bl,b.heure_bl);
-      return tb-ta;
+      if(tb!==ta) return tb-ta;
+      // Si même timestamp, trier par numéro décroissant
+      return String(b.recu_num).localeCompare(String(a.recu_num));
     });
     renderRecusTable(recus,'sec-rc-body',false);
   });
@@ -2467,7 +2469,10 @@ function renderRecusTable(recus,tbodyId,isAdmin){
     return;
   }
   recus=recus.slice().sort(function(a,b){
-    return parseDateHeure(b.date_bl,b.heure_bl)-parseDateHeure(a.date_bl,a.heure_bl);
+    var ta=parseDateHeure(a.date_bl,a.heure_bl);
+    var tb=parseDateHeure(b.date_bl,b.heure_bl);
+    if(tb!==ta) return tb-ta;
+    return String(b.recu_num).localeCompare(String(a.recu_num));
   });
   rcDataStore={};
   tb.innerHTML=recus.map(function(r,i){
@@ -2674,7 +2679,8 @@ function admLoadRecus(){
     recus.sort(function(a,b){
       var ta=parseDateHeure(a.date_bl,a.heure_bl);
       var tb=parseDateHeure(b.date_bl,b.heure_bl);
-      return tb-ta;
+      if(tb!==ta) return tb-ta;
+      return String(b.recu_num).localeCompare(String(a.recu_num));
     });
     renderRecusTable(recus,'adm-rc-body',true);
   });

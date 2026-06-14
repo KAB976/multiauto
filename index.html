@@ -1902,6 +1902,22 @@ function majModeles(){
 //  GPS
 // ══════════════════════════════════════════════════════════
 // Capitaliser première lettre de chaque mot
+function formatImmat(val){
+  // Détecter et formater l'immatriculation
+  val=val.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  // Nouveau format: FA196DV → FA-196-DV
+  if(/^[A-Z]{2}\d{3}[A-Z]{2}$/.test(val)){
+    return val.substring(0,2)+'-'+val.substring(2,5)+'-'+val.substring(5,7);
+  }
+  // Ancien format: 123AY976 → 123 AY 976
+  if(/^\d{1,4}[A-Z]{1,3}\d{1,3}$/.test(val)){
+    var m=val.match(/^(\d+)([A-Z]+)(\d+)$/);
+    if(m) return m[1]+' '+m[2]+' '+m[3];
+  }
+  // Si déjà formaté avec tirets ou espaces, retourner tel quel
+  return val;
+}
+
 function capitalizeFirst(input){
   input.addEventListener('input', function(){
     var pos = this.selectionStart;
@@ -2247,6 +2263,20 @@ function syncOffline(){
 }
 
 window.addEventListener('online',syncOffline);
+
+// Formatage automatique immatriculation
+document.addEventListener('DOMContentLoaded',function(){
+  ['inp-immat','mbl-immat'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('blur',function(){
+      this.value=formatImmat(this.value);
+    });
+    el.addEventListener('input',function(){
+      this.value=this.value.toUpperCase();
+    });
+  });
+});
 
 // ══════════════════════════════════════════════════════════
 //  SECRÉTAIRE
@@ -3166,10 +3196,10 @@ function renderBLHTML(b,cfg){
   var contact=(cfg.tel||'')+(cfg.email?' • '+cfg.email:'');
 
   var h='';
-  h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:800px;margin:0 auto;font-size:13px;color:#1A1A1A;display:flex;flex-direction:column;min-height:297mm">';
+  h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:800px;margin:0 auto;font-size:13px;color:#1A1A1A;display:flex;flex-direction:column;min-height:100%">';
 
   // EN-TÊTE
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:4px solid #E8501A">';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px;border-bottom:4px solid #E8501A">';
   h+=(logoG?'<img src="'+logoG+'" style="max-width:120px;max-height:80px;object-fit:contain" alt="">':'<div style="width:120px"></div>');
   h+='<div style="text-align:center;flex:1;padding:0 16px">';
   h+='<div style="font-size:11px;font-weight:700;color:#718096;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px">BON DE LIVRAISON — N°</div>';
@@ -3185,49 +3215,49 @@ function renderBLHTML(b,cfg){
   h+='</div>';
 
   // CORPS - flex:1 pour pousser pied de page en bas
-  h+='<div style="flex:1;padding:14px 20px">';
+  h+='<div style="flex:1;padding:8px 20px">';
 
   // VÉHICULE/CLIENT
-  h+='<div style="background:#E8501A;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;border-radius:3px">VÉHICULE / CLIENT</div>';
-  h+='<div style="display:flex;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+  h+='<div style="background:#E8501A;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;border-radius:3px">VÉHICULE / CLIENT</div>';
+  h+='<div style="display:flex;align-items:center;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
   h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:150px;flex-shrink:0">Immatriculation</span>';
   h+='<span style="font-family:monospace;font-size:16px;font-weight:900;letter-spacing:4px;color:#1A1A1A;background:#F5F5F5;border:1.5px solid #CCC;border-radius:4px;padding:3px 10px">'+b.immatriculation+'</span>';
   h+='</div>';
-  h+='<div style="display:flex;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+  h+='<div style="display:flex;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
   h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:80px;flex-shrink:0">Marque</span><span style="font-weight:600">'+b.marque+'</span></div>';
   h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:80px;flex-shrink:0">Modèle</span><span style="font-weight:600">'+b.modele+'</span></div>';
   h+='</div>';
-  h+='<div style="display:flex;margin-bottom:12px">';
+  h+='<div style="display:flex;margin-bottom:6px">';
   h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:110px;flex-shrink:0">Nom du client</span><span style="font-weight:700;font-size:14px">'+b.nom_client+'</span></div>';
   h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:110px;flex-shrink:0">N° Téléphone</span><span>'+(b.tel_client||'—')+'</span></div>';
   h+='</div>';
 
   // TRAJET
-  h+='<div style="background:#E8501A;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;border-radius:3px">TRAJET</div>';
-  h+='<div style="display:flex;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+  h+='<div style="background:#E8501A;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;border-radius:3px">TRAJET</div>';
+  h+='<div style="display:flex;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
   h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">Embarquement</span><span style="font-weight:700">'+b.lieu_embarquement+'</span></div>';
   h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:100px;flex-shrink:0">Destination</span><span style="font-weight:700">'+b.destination+'</span></div>';
   h+='</div>';
-  h+='<div style="display:flex;margin-bottom:12px"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">Observations</span><span>'+(b.observations||'—')+'</span></div>';
+  h+='<div style="display:flex;margin-bottom:6px"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">Observations</span><span>'+(b.observations||'—')+'</span></div>';
 
   // PAIEMENT
   if(b.montant_especes){
-    h+='<div style="background:#E8501A;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;border-radius:3px">PAIEMENT</div>';
-    h+='<div style="display:flex;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+    h+='<div style="background:#E8501A;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;border-radius:3px">PAIEMENT</div>';
+    h+='<div style="display:flex;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
     h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">Mode</span><span>Espèces</span></div>';
     h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:100px;flex-shrink:0">Montant</span><span style="font-weight:900;font-size:15px;color:#E8501A">'+parseFloat(b.montant_especes).toFixed(2)+' €</span></div>';
     h+='</div>';
-    h+='<div style="display:flex;margin-bottom:12px"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">N° Reçu</span><span style="font-family:monospace;font-weight:700;color:#E8501A">'+b.recu_num+'</span></div>';
+    h+='<div style="display:flex;margin-bottom:6px"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">N° Reçu</span><span style="font-family:monospace;font-weight:700;color:#E8501A">'+b.recu_num+'</span></div>';
   }
 
   // PHOTO + SIGNATURE
-  h+='<div style="background:#E8501A;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;border-radius:3px">PHOTO DU VÉHICULE / SIGNATURE DU CLIENT</div>';
-  h+='<div style="display:flex;gap:14px;margin-bottom:12px">';
-  h+='<div style="flex:1;min-height:180px;background:#FAFAFA;border:1px solid #E9ECEF;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px">';
-  h+=(photoSrc?'<img src="'+photoSrc+'" style="max-width:100%;max-height:180px;object-fit:contain;border-radius:4px;image-orientation:from-image" alt="Photo">':'<div style="text-align:center;color:#CCC"><div style="font-size:28px">📷</div><div style="font-size:11px;margin-top:4px">Aucune photo</div></div>');
+  h+='<div style="background:#E8501A;color:#fff;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;border-radius:3px">PHOTO DU VÉHICULE / SIGNATURE DU CLIENT</div>';
+  h+='<div style="display:flex;gap:14px;margin-bottom:6px">';
+  h+='<div style="flex:1;min-height:140px;background:#FAFAFA;border:1px solid #E9ECEF;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px">';
+  h+=(photoSrc?'<img src="'+photoSrc+'" style="max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;image-orientation:from-image" alt="Photo">':'<div style="text-align:center;color:#CCC"><div style="font-size:28px">📷</div><div style="font-size:11px;margin-top:4px">Aucune photo</div></div>');
   h+='</div>';
-  h+='<div style="flex:1;min-height:180px;background:#FAFAFA;border:1px solid #E9ECEF;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:6px">';
-  h+=(sigSrc?'<img src="'+sigSrc+'" style="max-width:100%;max-height:150px;object-fit:contain" alt="Signature">':'<div style="text-align:center;color:#CCC"><div style="font-size:28px">✍️</div><div style="font-size:11px;margin-top:4px">Aucune signature</div></div>');
+  h+='<div style="flex:1;min-height:140px;background:#FAFAFA;border:1px solid #E9ECEF;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:6px">';
+  h+=(sigSrc?'<img src="'+sigSrc+'" style="max-width:100%;max-height:130px;object-fit:contain" alt="Signature">':'<div style="text-align:center;color:#CCC"><div style="font-size:28px">✍️</div><div style="font-size:11px;margin-top:4px">Aucune signature</div></div>');
   h+='</div>';
   h+='</div>';
   h+='</div>'; // fin corps

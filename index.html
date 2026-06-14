@@ -3012,6 +3012,74 @@ function telechargerDoc(data,type){
 
 
 function ouvrirDocumentPrint(html,nom){
+  // Créer page d'impression avec pied de page position fixed
+  var style='<style>'
+    +'*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    +'body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#fff}'
+    +'@page{margin:8mm;size:A4 portrait}'+'@media print{.pdf-footer{position:fixed;bottom:0;left:0;right:0;background:#fff}.no-print{display:none!important}}'
+    +'@media print{.no-print{display:none!important}}'
+    +'img{max-width:100%!important;image-orientation:from-image!important}'
+    +'</style>';
+
+  var toolbar='<div class="no-print" style="background:#2D3748;padding:8px 16px;display:flex;gap:8px;align-items:center;position:sticky;top:0;z-index:99">'
+    +'<span style="color:#fff;font-size:13px;font-weight:700;flex:1">'+nom+'</span>'
+    +'<button onclick="window.print()" style="padding:7px 16px;background:#E8501A;color:#fff;border:none;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer">🖨️ Imprimer / PDF</button>'
+    +'<button onclick="window.close()" style="padding:7px 14px;background:#718096;color:#fff;border:none;border-radius:5px;font-size:13px;cursor:pointer">✕</button>'
+    +'</div>';
+
+  var fullHtml='<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+nom+'</title>'+style+'</head><body>'+toolbar+html+'</body></html>';
+
+  try{
+    var blob=new Blob([fullHtml],{type:'text/html;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var win=window.open(url,'_blank');
+    if(win){
+      setTimeout(function(){URL.revokeObjectURL(url);},10000);
+    } else {
+      // Fallback: télécharger le fichier HTML
+      var a=document.createElement('a');
+      a.href=url;
+      a.download=nom+'.html';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
+      showToast('Fichier téléchargé — Ouvrez-le puis Ctrl+P pour imprimer en PDF');
+    }
+  }catch(e){showToast('Erreur: '+e.message);}
+}
+
+
+function voirBLById(id){var b=blDataStore[id];if(b)voirBL(b);else showToast('Données introuvables');}
+function voirRecuById(id){var r=rcDataStore[id];if(r)voirRecu(r);else showToast('Données introuvables');}
+function imprimerBLById(id){var b=blDataStore[id];if(b)imprimerDoc(b,'bl');else showToast('Données introuvables');}
+function imprimerRecuById(id){var r=rcDataStore[id];if(r)imprimerDoc(r,'recu');else showToast('Données introuvables');}
+function telechargerBLById(id){var b=blDataStore[id];if(b)telechargerDoc(b,'bl');else showToast('Données introuvables');}
+function telechargerRecuById(id){var r=rcDataStore[id];if(r)telechargerDoc(r,'recu');else showToast('Données introuvables');}
+
+function voirRecu(r){
+  currentPDFData={type:'recu',data:r};
+  var cfg=getConfig();
+  G('modal-pdf-content').innerHTML=renderRecuHTML(r,cfg);
+  G('modal-pdf-title').textContent='Reçu — '+r.recu_num;
+  openModal('modal-pdf');
+}
+
+function imprimerDoc(data,type){
+  var cfg=getConfig();
+  var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
+  var nom=type==='bl'?data.bon_num:data.recu_num;
+  ouvrirDocumentPrint(html,nom);
+}
+
+function telechargerDoc(data,type){
+  var cfg=getConfig();
+  var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
+  var nom=type==='bl'?data.bon_num:data.recu_num;
+  ouvrirDocumentPrint(html,nom);
+}
+
+
+function ouvrirDocumentPrint(html,nom){
   var container=document.createElement('div');
   container.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;font-family:Arial,sans-serif;font-size:13px;color:#1A1A1A';
   container.innerHTML=html;
@@ -3066,7 +3134,7 @@ function getPrintHTML(html,nom){
   return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+nom+'</title>'
     +'<style>*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
     +'body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#fff}'
-    +'@page{margin:8mm;size:A4 portrait}'
+    +'@page{margin:8mm;size:A4 portrait}'+'@media print{.pdf-footer{position:fixed;bottom:0;left:0;right:0;background:#fff}.no-print{display:none!important}}'
     +'img{max-width:100%!important;image-orientation:from-image!important}'
     +'</style></head><body>'+html+'</body></html>';
 }
@@ -3165,7 +3233,7 @@ function renderBLHTML(b,cfg){
   h+='</div>'; // fin corps
 
   // PIED DE PAGE - toujours en bas
-  h+='<div style="border-top:3px solid #E8501A;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:auto">';
+  h+='<div style="border-top:3px solid #E8501A;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:auto" class="pdf-footer">';
   h+='<div style="text-align:center;flex:1">';
   h+='<div style="font-size:12px;font-weight:900;color:#2D3748">'+nom+'</div>';
   h+='<div style="font-size:10px;color:#718096;margin-top:2px">'+adresse+(contact?' • '+contact:'')+'</div>';

@@ -3310,70 +3310,70 @@ function renderRecuHTML(r,cfg){
   var contact=(cfg.tel||'')+(cfg.email?' • '+cfg.email:'');
 
   var h='';
-  h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:700px;margin:0 auto;font-size:13px;color:#1A1A1A;display:flex;flex-direction:column;min-height:297mm">';
+  h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:700px;margin:0 auto;font-size:11px;color:#1A1A1A;display:flex;flex-direction:column;min-height:297mm">';
 
   // EN-TÊTE
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:4px solid #E8501A">';
-  h+=(logoG?'<img src="'+logoG+'" style="max-width:110px;max-height:75px;object-fit:contain" alt="">':'<div style="width:110px"></div>');
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px;border-bottom:4px solid #E8501A">';
+  h+=(logoG?'<img src="'+logoG+'" style="max-width:90px;max-height:60px;object-fit:contain" alt="">':'<div style="width:110px"></div>');
   h+='<div style="text-align:center;flex:1;padding:0 16px">';
   h+='<div style="font-size:11px;font-weight:700;color:#718096;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px">REÇU DE PAIEMENT — N°</div>';
-  h+='<div style="font-size:28px;font-weight:900;color:#E8501A;font-family:monospace;letter-spacing:3px">'+r.recu_num+'</div>';
+  h+='<div style="font-size:20px;font-weight:900;color:#E8501A;font-family:monospace;letter-spacing:3px">'+r.recu_num+'</div>';
   h+='</div>';
-  h+=(logoD?'<img src="'+logoD+'" style="max-width:150px;max-height:75px;object-fit:contain" alt="">':'<div style="width:150px"></div>');
+  h+=(logoD?'<img src="'+logoD+'" style="max-width:130px;max-height:60px;object-fit:contain" alt="">':'<div style="width:150px"></div>');
   h+='</div>';
 
   // DATE + BL
-  h+='<div style="display:flex;justify-content:space-between;padding:7px 20px;background:#F8F9FA;font-size:12px;border-bottom:1px solid #E9ECEF">';
+  h+='<div style="display:flex;justify-content:space-between;padding:4px 16px;background:#F8F9FA;font-size:12px;border-bottom:1px solid #E9ECEF">';
   h+='<div><span style="font-weight:700;color:#718096;font-size:10px;text-transform:uppercase">Date : </span><span style="font-weight:600">'+dateAff+'</span></div>';
   h+='<div><span style="font-weight:700;color:#718096;font-size:10px;text-transform:uppercase">Bon de livraison : </span><span style="font-family:monospace;font-weight:700">'+r.bon_num+'</span></div>';
   h+='</div>';
 
   // CORPS flex:1
-  h+='<div style="flex:1;padding:14px 20px">';
+  h+='<div style="flex:1;padding:6px 16px">';
 
   // CLIENT
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+  h+='<div style="display:flex;align-items:baseline;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
   h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:130px;flex-shrink:0">Reçu de :</span>';
-  h+='<span style="font-size:16px;font-weight:900">'+r.nom_client+'</span>';
+  h+='<span style="font-size:13px;font-weight:900">'+r.nom_client+'</span>';
   h+='</div>';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:14px">';
+  h+='<div style="display:flex;align-items:baseline;margin-bottom:5px">';
   h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:130px;flex-shrink:0">Téléphone :</span>';
   h+='<span>'+(r.tel_client||'—')+'</span>';
   h+='</div>';
 
   // MONTANT
-  h+='<div style="background:#FFF8E1;border:2px solid #D4A800;border-radius:10px;padding:18px;text-align:center;margin-bottom:14px">';
-  h+='<div style="font-size:10px;font-weight:700;color:#7A5C00;text-transform:uppercase;letter-spacing:3px;margin-bottom:8px">MONTANT REÇU EN ESPÈCES</div>';
-  h+='<div style="font-size:36px;font-weight:900;color:#2D3748;margin-bottom:4px">'+montant.toFixed(2)+' €</div>';
+  h+='<div style="background:#FFF8E1;border:2px solid #D4A800;border-radius:10px;padding:8px;text-align:center;margin-bottom:5px">';
+  h+='<div style="font-size:10px;font-weight:700;color:#7A5C00;text-transform:uppercase;letter-spacing:3px;margin-bottom:4px">MONTANT REÇU EN ESPÈCES</div>';
+  h+='<div style="font-size:24px;font-weight:900;color:#2D3748;margin-bottom:4px">'+montant.toFixed(2)+' €</div>';
   h+='<div style="font-size:12px;color:#7A5C00;font-style:italic">Soit : '+montantEnLettres(montant)+'</div>';
   h+='</div>';
 
   // PRESTATION
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+  h+='<div style="display:flex;align-items:baseline;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
   h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:150px;flex-shrink:0">Pour la prestation :</span>';
   h+='<span>Transport / dépannage du véhicule <strong>'+r.marque+' '+r.modele+'</strong></span>';
   h+='</div>';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+  h+='<div style="display:flex;align-items:baseline;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
   h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:150px;flex-shrink:0">Trajet :</span>';
   h+='<span><strong>'+r.lieu_embarquement+'</strong> → <strong>'+r.destination+'</strong></span>';
   h+='</div>';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:16px">';
+  h+='<div style="display:flex;align-items:baseline;margin-bottom:5px">';
   h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:150px;flex-shrink:0">Encaissé par :</span>';
   h+='<span style="font-weight:700">'+r.chauffeur_nom+'</span>';
   h+='</div>';
 
   // CACHET PAYÉ + FILIGRANE KAB
   h+='<div style="position:relative;min-height:130px;display:flex;align-items:center;justify-content:flex-end;padding-right:30px">';
-  h+='<div style="position:absolute;top:50%;left:38%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Georgia,serif;font-style:italic;font-size:90px;font-weight:900;color:rgba(59,159,212,0.07);pointer-events:none;white-space:nowrap;user-select:none">KAB</div>';
-  h+='<div style="position:relative;z-index:1;width:145px;height:88px;border:5px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.95)">';
-  h+='<div style="font-size:21px;font-weight:900;color:#1565C0;line-height:1.1;text-align:center;letter-spacing:3px">P A Y É</div>';
-  h+='<div style="font-size:10px;font-weight:700;color:#1565C0;margin-top:4px;text-align:center">le '+dateAff+'</div>';
+  h+='<div style="position:absolute;top:50%;left:38%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Georgia,serif;font-style:italic;font-size:70px;font-weight:900;color:rgba(59,159,212,0.07);pointer-events:none;white-space:nowrap;user-select:none">KAB</div>';
+  h+='<div style="position:relative;z-index:1;width:120px;height:72px;border:5px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.95)">';
+  h+='<div style="font-size:17px;font-weight:900;color:#1565C0;line-height:1.1;text-align:center;letter-spacing:3px">P A Y É</div>';
+  h+='<div style="font-size:10px;font-weight:700;color:#1565C0;margin-top:2px;text-align:center">le '+dateAff+'</div>';
   h+='</div>';
   h+='</div>';
   h+='</div>'; // fin corps
 
   // PIED DE PAGE - en bas
-  h+='<div style="border-top:3px solid #E8501A;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:auto">';
+  h+='<div style="border-top:3px solid #E8501A;padding:5px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:auto">';
   h+='<div style="text-align:center;flex:1">';
   h+='<div style="font-size:12px;font-weight:900;color:#2D3748">'+nom+'</div>';
   h+='<div style="font-size:10px;color:#718096;margin-top:2px">'+adresse+(contact?' • '+contact:'')+'</div>';

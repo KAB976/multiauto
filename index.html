@@ -1088,7 +1088,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzc8Vd_dvnKpSl_MpNBCIn8Oo1UdvTIgruj0YlhumaQDjxgiUvywNl6GvCl9KjVESBKNw/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhzk4uWQvK8kNenVxsbEJ9EvJkCuuxYH5Vc93xFsL9mdEoDzFvUlHU0g1kkq4uIWKF/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1301,7 +1301,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbzc8Vd_dvnKpSl_MpNBCIn8Oo1UdvTIgruj0YlhumaQDjxgiUvywNl6GvCl9KjVESBKNw/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbyhzk4uWQvK8kNenVxsbEJ9EvJkCuuxYH5Vc93xFsL9mdEoDzFvUlHU0g1kkq4uIWKF/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -2185,7 +2185,10 @@ function secAssignerCamionTmp(){
 function secTab(id,btn){
   document.querySelectorAll('#pg-secretaire .sub-pg').forEach(function(p){p.classList.remove('on')});
   document.querySelectorAll('#pg-secretaire .nav-btn').forEach(function(b){b.classList.remove('on')});
-  G('sec-'+id).classList.add('on'); btn.classList.add('on');
+  var el=G('sec-'+id);
+  if(el){el.style.display='block';el.classList.add('on');}
+  btn.classList.add('on');
+  if(id==='camion-tmp') secInitCamionTmp();
 }
 
 function chargerSelectsChauffeurs(ids){
@@ -2827,7 +2830,7 @@ function renderBLHTML(b,cfg){
     +'<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Comic Sans MS,ComicSansMS,cursive;font-size:120px;font-weight:900;color:rgba(20,50,120,0.06);pointer-events:none;white-space:nowrap;z-index:0;user-select:none">KAB</div>'
 
     // ── PIED DE PAGE ──
-    +'<div style="position:fixed;bottom:15px;left:0;right:0;border-top:3px solid #E8501A;padding-top:8px;text-align:center;font-size:11px;color:#718096">'
+    +'<div style="border-top:3px solid #E8501A;padding-top:10px;margin-top:20px;text-align:center;font-size:11px;color:#718096">'
     +'<strong style="color:#2D3748;font-size:12px">'+cfg.nom+'</strong>'
     +(cfg.adr?' &bull; '+cfg.adr:'')+(cfg.ville?' '+cfg.ville:'')+(cfg.tel?' &bull; '+cfg.tel:'')+(cfg.email?' &bull; '+cfg.email:'')
     +'<br><em>Document généré le '+fmtDate(new Date())+'</em>'
@@ -2916,7 +2919,7 @@ function renderRecuHTML(r,cfg){
     +'</div>'
 
     // ── PIED DE PAGE ──
-    +'<div style="position:fixed;bottom:15px;left:0;right:0;border-top:3px solid #E8501A;padding-top:8px;text-align:center;font-size:11px;color:#718096">'
+    +'<div style="border-top:3px solid #E8501A;padding-top:10px;margin-top:20px;text-align:center;font-size:11px;color:#718096">'
     +'<strong style="color:#2D3748;font-size:12px">'+cfg.nom+'</strong>'
     +(cfg.adr?' &bull; '+cfg.adr:'')+(cfg.ville?' '+cfg.ville:'')+(cfg.tel?' &bull; '+cfg.tel:'')+(cfg.email?' &bull; '+cfg.email:'')
     +'<br><em>Document généré le '+fmtDate(new Date())+'</em>'
@@ -3043,28 +3046,45 @@ function renderRecuHTML(r,cfg){
 // DOWNLOAD PDF
 function downloadPDF(){
   if(!currentPDFData) return;
-  var nom=currentPDFData.type==='bl'?currentPDFData.data.bon_num:currentPDFData.data.recu_num;
-  var cont=G('modal-pdf-content');
-  var html=cont.innerHTML;
-  var win=window.open('','_blank');
-  if(!win){showToast('Autorisez les popups pour télécharger');return;}
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+nom+'</title>'
+  var cfg=getConfig();
+  var data=currentPDFData.data;
+  var nom=currentPDFData.type==='bl'?data.bon_num:data.recu_num;
+  var html=currentPDFData.type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
+  
+  var win=window.open('','_blank','width=900,height=750,scrollbars=yes');
+  if(!win){
+    showToast('Autorisez les popups dans Chrome pour télécharger');
+    return;
+  }
+  win.document.write(
+    '<!DOCTYPE html><html lang="fr">'
+    +'<head><meta charset="UTF-8"><title>'+nom+'</title>'
     +'<style>'
-    +'*{box-sizing:border-box;margin:0;padding:0}'
-    +'body{font-family:Arial,sans-serif;padding:10px}'
+    +'*{box-sizing:border-box}'
+    +'body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}'
+    +'.toolbar{background:#2D3748;padding:10px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}'
+    +'.toolbar button{padding:8px 18px;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer}'
+    +'.btn-print{background:#E8501A;color:#fff}'
+    +'.btn-close{background:#718096;color:#fff}'
+    +'.toolbar span{color:#fff;font-size:14px;font-weight:700;flex:1}'
+    +'.doc-wrap{max-width:820px;margin:20px auto;background:#fff;padding:0;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15)}'
     +'@media print{'
-    +'body{padding:0}'
-    +'@page{margin:8mm;size:A4}'
-    +'button{display:none!important}'
+    +'.toolbar{display:none!important}'
+    +'body{background:#fff}'
+    +'.doc-wrap{box-shadow:none;margin:0;border-radius:0}'
+    +'@page{margin:10mm;size:A4}'
     +'}'
     +'</style>'
-    +'</head><body>'
-    +'<div style="margin-bottom:10px;text-align:center">'
-    +'<button onclick="window.print()" style="padding:8px 20px;background:#E8501A;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;margin-right:8px">🖨️ Imprimer / Enregistrer PDF</button>'
-    +'<button onclick="window.close()" style="padding:8px 20px;background:#718096;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer">✕ Fermer</button>'
+    +'</head>'
+    +'<body>'
+    +'<div class="toolbar">'
+    +'<span>'+nom+'</span>'
+    +'<button class="btn-print" onclick="window.print()">🖨️ Imprimer / PDF</button>'
+    +'<button class="btn-close" onclick="window.close()">✕ Fermer</button>'
     +'</div>'
-    +html
-    +'</body></html>');
+    +'<div class="doc-wrap">'+html+'</div>'
+    +'</body></html>'
+  );
   win.document.close();
 }
 

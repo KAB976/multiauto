@@ -366,7 +366,7 @@ tr:nth-child(even) td{background:var(--gy)}
     <!-- TRAJET -->
     <div class="card">
       <div class="card-title"><span class="ico">📍</span> Trajet</div>
-      <label class="fl">Lieu d'embarquement <span class="req-b">Obligatoire</span></label>
+      <label class="fl">Lieu d embarquement <span class="req-b">Obligatoire</span></label>
       <input class="inp mb12" type="text" id="inp-emb" placeholder="Ville de départ">
 
       <!-- DESTINATION BLOQUÉE JUSQU'À ARRIVÉE -->
@@ -581,6 +581,7 @@ tr:nth-child(even) td{background:var(--gy)}
     <button class="nav-btn" onclick="admTab('bl',this)">📋 BL & Reçus</button>
     <button class="nav-btn" onclick="admTab('gps',this)">🗺️ GPS / Trajets</button>
     <button class="nav-btn" onclick="admTab('chauffeurs',this)">👨‍✈️ Chauffeurs</button>
+    <button class="nav-btn" onclick="admTab('camion-tmp',this)">🔄 Camion temp.</button>
     <button class="nav-btn" onclick="admTab('camions',this)">🚛 Camions</button>
     <button class="nav-btn" onclick="admTab('vehicules',this)">🚗 Véhicules</button>
     <button class="nav-btn" onclick="admTab('stats',this)">📊 Statistiques</button>
@@ -677,6 +678,43 @@ tr:nth-child(even) td{background:var(--gy)}
         <label class="fl">Nouveau mot de passe secrétaire</label>
         <input class="inp" type="password" id="inp-pwd-sec" placeholder="Nouveau mot de passe">
         <button class="btn btn-or" onclick="savePwdSecretaire()">💾 Enregistrer</button>
+      </div>
+    </div>
+
+    <!-- CAMION TEMPORAIRE -->
+    <div class="sub-pg" id="adm-camion-tmp">
+      <div class="card">
+        <div class="card-title"><span class="ico">🔄</span> Changement de camion temporaire</div>
+        <p style="font-size:13px;color:var(--mt);margin-bottom:14px">Assignez temporairement un autre camion à un chauffeur. Le chauffeur verra le nouveau camion dans son application.</p>
+        <div class="row2">
+          <div>
+            <label class="fl">Chauffeur à modifier</label>
+            <select class="inp" id="adm-tmp-chauf-sel" onchange="admMajCamionsTmp()">
+              <option value="">-- Choisir chauffeur --</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl">Camion actuel</label>
+            <input class="inp" type="text" id="adm-tmp-camion-actuel" readonly style="background:#f5f5f5;color:var(--mt)">
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label class="fl">Nouveau camion temporaire</label>
+            <select class="inp" id="adm-tmp-camion-sel">
+              <option value="">-- Choisir camion --</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn btn-or btn-w" onclick="admAssignerCamionTmp()">🔄 Assigner ce camion</button>
+          </div>
+        </div>
+        <div class="al al-gr" id="adm-tmp-cam-ok"></div>
+        <div class="al al-re" id="adm-tmp-cam-err"></div>
+        <div style="margin-top:14px">
+          <div class="card-title"><span class="ico">👨‍✈️</span> État actuel des chauffeurs</div>
+          <div id="adm-tmp-chauf-etat"></div>
+        </div>
       </div>
     </div>
 
@@ -1492,11 +1530,11 @@ function soumettreMBL(){
   var dest=G('mbl-dest').value.trim();
   var dateVal=G('mbl-date').value;
   if(!chaufId){err.textContent="Choisissez un chauffeur";err.classList.add('on');return;}
-  if(!immat){err.textContent="Saisissez l'immatriculation";err.classList.add('on');return;}
+  if(!immat){err.textContent="Saisissez immatriculation";err.classList.add('on');return;}
   if(!marque){err.textContent="Choisissez la marque";err.classList.add('on');return;}
   if(!modele){err.textContent="Choisissez le modèle";err.classList.add('on');return;}
   if(!client){err.textContent="Saisissez le nom du client";err.classList.add('on');return;}
-  if(!emb){err.textContent="Saisissez l'embarquement";err.classList.add('on');return;}
+  if(!emb){err.textContent="Saisissez embarquement";err.classList.add('on');return;}
   if(!dest){err.textContent="Saisissez la destination";err.classList.add('on');return;}
   var users=getUsers();
   var u=users.find(function(x){return x.id===chaufId});
@@ -1578,6 +1616,76 @@ function assignerCamionTmp(){
   ok.textContent='✅ Camion '+camNom+' ('+camImmat+') assigné à '+users[idx].nom;
   ok.classList.add('on');
   setTimeout(function(){ok.classList.remove('on');},4000);
+}
+
+function admTab(id,btn){
+  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
+  G('adm-'+id).classList.add('on'); btn.classList.add('on');
+  if(id==='camion-tmp') admInitCamionTmp();
+}
+
+function admInitCamionTmp(){
+  var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
+  var sel=G('adm-tmp-chauf-sel');
+  if(!sel) return;
+  sel.innerHTML='<option value="">-- Choisir chauffeur --</option>';
+  users.forEach(function(u){
+    sel.innerHTML+='<option value="'+u.id+'">'+u.nom+'</option>';
+  });
+  admMajCamionsTmp();
+  admAfficherEtatChauffeurs();
+}
+
+function admMajCamionsTmp(){
+  var id=G('adm-tmp-chauf-sel').value;
+  var users=getUsers();
+  var u=users.find(function(x){return x.id===id});
+  G('adm-tmp-camion-actuel').value=u?(u.camion||'Aucun')+(u.immatCam?' ('+u.immatCam+')':''):'';
+  var camions=getCamions().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
+  var sel=G('adm-tmp-camion-sel');
+  sel.innerHTML='<option value="">-- Choisir camion --</option>';
+  camions.forEach(function(c){
+    sel.innerHTML+='<option value="'+c.id+'" data-nom="'+c.nom+'" data-immat="'+c.immat+'">'+c.nom+' ('+c.immat+')</option>';
+  });
+}
+
+function admAssignerCamionTmp(){
+  var chaufId=G('adm-tmp-chauf-sel').value;
+  var camSel=G('adm-tmp-camion-sel');
+  var camId=camSel.value;
+  var ok=G('adm-tmp-cam-ok');
+  var err=G('adm-tmp-cam-err');
+  ok.classList.remove('on'); err.classList.remove('on');
+  if(!chaufId){err.textContent="Choisissez un chauffeur";err.classList.add('on');return;}
+  if(!camId){err.textContent="Choisissez un camion";err.classList.add('on');return;}
+  var opt=camSel.options[camSel.selectedIndex];
+  var camNom=opt.dataset.nom||'';
+  var camImmat=opt.dataset.immat||'';
+  var users=getUsers();
+  var idx=users.findIndex(function(u){return u.id===chaufId});
+  if(idx<0){err.textContent="Chauffeur introuvable";err.classList.add('on');return;}
+  var nomChauf=users[idx].nom;
+  users[idx].camion=camNom;
+  users[idx].immatCam=camImmat;
+  saveUsers(users);
+  chargerChauffeursAdmin();
+  admAfficherEtatChauffeurs();
+  ok.textContent='✅ Camion '+camNom+' ('+camImmat+') assigné à '+nomChauf;
+  ok.classList.add('on');
+  setTimeout(function(){ok.classList.remove('on');},4000);
+  G('adm-tmp-chauf-sel').value='';
+  G('adm-tmp-camion-actuel').value='';
+}
+
+function admAfficherEtatChauffeurs(){
+  var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
+  var cont=G('adm-tmp-chauf-etat');
+  if(!cont) return;
+  if(!users.length){cont.innerHTML='<p style="color:var(--mt);font-size:13px">Aucun chauffeur configuré</p>';return;}
+  cont.innerHTML=users.map(function(u){
+    return '<div class="list-item"><div style="flex:1"><div class="li-name">'+u.nom+'</div><div class="li-sub">Camion : '+(u.camion||'Aucun')+(u.immatCam?' ('+u.immatCam+')':'')+'</div></div></div>';
+  }).join('');
 }
 
 function initCamionTmpSelects(){
@@ -2176,7 +2284,7 @@ function renderRecusTable(recus,tbodyId,isAdmin){
 
 function secLoadStats(){
   loader(true,'Calcul...');
-  apiCall({action:'getStats',d1:G('sec-st-d1').value,d2:G('sec-st-d2').value,chauffeur:G('sec-st-chauf').value},function(data,err){
+  apiCall({action:'getStats',d1:G('sec-st-d1').value||'',d2:G('sec-st-d2').value||'',chauffeur:G('sec-st-chauf').value||''},function(data,err){
     loader(false);
     if(err||!data){showToast('Erreur: '+(err||''));return}
     var d1=G('sec-st-d1').value, d2=G('sec-st-d2').value, ch=G('sec-st-chauf').value;
@@ -2283,11 +2391,7 @@ function entrerAdmin(){
   setTimeout(chargerPermissionsUI,300);
 }
 
-function admTab(id,btn){
-  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){p.classList.remove('on')});
-  document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
-  G('adm-'+id).classList.add('on'); btn.classList.add('on');
-}
+// admTab intégré dans initCamionTmpSelects
 
 function admLoadDashboard(){
   var users=getUsers();
@@ -2297,10 +2401,23 @@ function admLoadDashboard(){
     G('ds-bl').textContent=data.totalBL||0;
     G('ds-recus').textContent=data.totalRecus||0;
     G('ds-montant').textContent=parseFloat(data.totalMontant||0).toFixed(2)+' €';
-    if(data.derniersBL) renderBLTable(data.derniersBL,'adm-dash-bl',true);
-    // Charger aussi les derniers reçus
+    if(data.derniersBL){
+      var bls=data.derniersBL.sort(function(a,b){
+        var da=parseLocalDate(formatDateFR(a.date_bl));
+        var db=parseLocalDate(formatDateFR(b.date_bl));
+        return (db&&da)?(db-da):0;
+      });
+      renderBLTable(bls,'adm-dash-bl',true);
+    }
     apiCall({action:'getRecus',d1:'',d2:'',chauffeur:''},function(d2,e2){
-      if(d2&&d2.recus) renderRecusTable(d2.recus.slice(0,5),'adm-dash-recus',true);
+      if(d2&&d2.recus){
+        var recus=d2.recus.sort(function(a,b){
+          var da=parseLocalDate(formatDateFR(a.date_bl));
+          var db=parseLocalDate(formatDateFR(b.date_bl));
+          return (db&&da)?(db-da):0;
+        });
+        renderRecusTable(recus.slice(0,5),'adm-dash-recus',true);
+      }
     });
   });
 }
@@ -2358,7 +2475,7 @@ function admLoadGPS(){
 
 function admLoadStats(){
   loader(true,'Calcul...');
-  apiCall({action:'getStats',d1:G('adm-st-d1').value,d2:G('adm-st-d2').value,chauffeur:G('adm-st-chauf').value},function(data,err){
+  apiCall({action:'getStats',d1:G('adm-st-d1').value||'',d2:G('adm-st-d2').value||'',chauffeur:G('adm-st-chauf').value||''},function(data,err){
     loader(false);
     if(err||!data){showToast('Erreur: '+(err||''));return}
     var d1=G('adm-st-d1').value, d2=G('adm-st-d2').value, ch=G('adm-st-chauf').value;
@@ -2619,74 +2736,100 @@ function voirBL(b){
 }
 
 function renderBLHTML(b,cfg){
-  var tnBadge=b.tn_tw?'<span style="background:'+(b.tn_tw==='TW'?'#2563EB':'#C0392B')+';color:#fff;border-radius:5px;padding:2px 10px;font-size:13px;font-weight:900;margin-left:8px">'+b.tn_tw+'</span>':'';
-  var photoSrc=b.photo_vehicule||(b.photo_url?b.photo_url:'');
+  var tnBadge=b.tn_tw?'<span style="background:'+(b.tn_tw==='TW'?'#2563EB':'#C0392B')+';color:#fff;border-radius:5px;padding:3px 10px;font-size:13px;font-weight:900;margin-left:8px">'+b.tn_tw+'</span>':'';
+  var photoSrc=b.photo_vehicule||(b.photo_url||'');
   var dateFR=formatDateFR(b.date_bl);
+  var logoG=cfg.logoG||''; var logoD=cfg.logoD||'';
+
   return (
-    '<div style="font-family:Arial,sans-serif;max-width:780px;margin:0 auto;padding:20px;font-size:13px;position:relative">'
-    // EN-TETE : logo gauche | titre+numero | logo droite
-    +'<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #E8501A;padding-bottom:14px;margin-bottom:16px">'
-    +(cfg.logoG?'<img src="'+cfg.logoG+'" style="max-width:110px;max-height:80px;object-fit:contain" alt="">':'<div style="width:110px"></div>')
-    +'<div style="flex:1;text-align:center;padding:0 12px">'
-    +'<div style="font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:2px">Bon de Livraison — N°</div>'
-    +'<div style="font-size:28px;font-weight:900;color:#2D3748;font-family:monospace;letter-spacing:2px">'+b.bon_num+'</div>'
+    '<div style="font-family:Arial,sans-serif;width:100%;max-width:800px;margin:0 auto;padding:24px;font-size:13px;position:relative;box-sizing:border-box">'
+
+    // ── EN-TÊTE ──
+    +'<div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:4px solid #E8501A;margin-bottom:0">'
+    +(logoG?'<img src="'+logoG+'" style="max-width:120px;max-height:90px;object-fit:contain" alt="">':'<div style="width:120px"></div>')
+    +'<div style="flex:1;text-align:center;padding:0 16px">'
+    +'<div style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px">BON DE LIVRAISON — N°</div>'
+    +'<div style="font-size:30px;font-weight:900;color:#2D3748;font-family:monospace;letter-spacing:2px">'+b.bon_num+'</div>'
     +'</div>'
-    +(cfg.logoD?'<img src="'+cfg.logoD+'" style="max-width:150px;max-height:80px;object-fit:contain" alt="">':'<div style="width:150px"></div>')
+    +(logoD?'<img src="'+logoD+'" style="max-width:160px;max-height:90px;object-fit:contain" alt="">':'<div style="width:160px"></div>')
     +'</div>'
-    // BANDE DATE/CHAUFFEUR
-    +'<div style="background:#2D3748;color:#fff;border-radius:8px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
-    +'<div style="font-size:14px"><strong>Date :</strong> '+dateFR+' '+b.heure_bl+tnBadge+'</div>'
-    +'<div style="font-size:14px"><strong>Chauffeur :</strong> '+b.chauffeur_nom+(b.chauffeur_camion?' — '+b.chauffeur_camion:'')+'</div>'
+
+    // ── BANDE DATE/CHAUFFEUR ──
+    +'<div style="background:#2D3748;color:#fff;padding:10px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    +'<div style="font-size:14px;font-weight:700">Date : '+dateFR+' '+b.heure_bl+tnBadge+'</div>'
+    +'<div style="font-size:14px;font-weight:700">Chauffeur : '+b.chauffeur_nom+(b.chauffeur_camion?' — '+b.chauffeur_camion:'')+'</div>'
     +'</div>'
-    // VEHICULE/CLIENT
-    +'<table style="width:100%;border-collapse:collapse;margin-bottom:12px">'
-    +'<thead><tr style="background:#E8501A;color:#fff"><th colspan="4" style="padding:8px 12px;text-align:left;font-size:12px;letter-spacing:1px">VÉHICULE / CLIENT</th></tr></thead>'
+
+    // ── VÉHICULE / CLIENT ──
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:14px">'
+    +'<thead><tr><th colspan="4" style="background:#E8501A;color:#fff;padding:8px 12px;text-align:left;font-size:11px;letter-spacing:2px;text-transform:uppercase">VÉHICULE / CLIENT</th></tr></thead>'
     +'<tbody>'
-    +'<tr><td style="padding:7px 10px;font-weight:700;color:#718096;width:20%;background:#F8F8F8">Immatriculation</td><td style="font-family:monospace;font-weight:900;font-size:15px;letter-spacing:2px">'+b.immatriculation+'</td><td style="font-weight:700;color:#718096;width:15%;background:#F8F8F8">Marque</td><td>'+b.marque+'</td></tr>'
-    +'<tr><td style="padding:7px 10px;font-weight:700;color:#718096;background:#F8F8F8">Modèle</td><td>'+b.modele+'</td><td style="font-weight:700;color:#718096;background:#F8F8F8">Client</td><td><strong>'+b.nom_client+'</strong></td></tr>'
-    +'<tr><td style="padding:7px 10px;font-weight:700;color:#718096;background:#F8F8F8">Téléphone</td><td colspan="3">'+(b.tel_client||'—')+'</td></tr>'
+    // Immatriculation seule sur sa ligne
+    +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;width:22%;background:#F8F9FA;border:1px solid #E9ECEF">Immatriculation</td>'
+    +'<td colspan="3" style="padding:8px 12px;font-family:monospace;font-size:16px;font-weight:900;letter-spacing:3px;border:1px solid #E9ECEF">'+b.immatriculation+'</td></tr>'
+    // Marque + Modèle sur même ligne
+    +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF">Marque</td>'
+    +'<td style="padding:8px 12px;border:1px solid #E9ECEF;width:28%">'+b.marque+'</td>'
+    +'<td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF;width:22%">Modèle</td>'
+    +'<td style="padding:8px 12px;border:1px solid #E9ECEF">'+b.modele+'</td></tr>'
+    // Nom client + Téléphone sur même ligne
+    +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF">Nom du client</td>'
+    +'<td style="padding:8px 12px;font-weight:700;font-size:14px;border:1px solid #E9ECEF">'+b.nom_client+'</td>'
+    +'<td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF">N° Téléphone</td>'
+    +'<td style="padding:8px 12px;border:1px solid #E9ECEF">'+(b.tel_client||'—')+'</td></tr>'
     +'</tbody></table>'
-    // TRAJET
-    +'<table style="width:100%;border-collapse:collapse;margin-bottom:12px">'
-    +'<thead><tr style="background:#E8501A;color:#fff"><th colspan="4" style="padding:8px 12px;text-align:left;font-size:12px;letter-spacing:1px">TRAJET</th></tr></thead>'
+
+    // ── TRAJET ──
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:14px">'
+    +'<thead><tr><th colspan="4" style="background:#E8501A;color:#fff;padding:8px 12px;text-align:left;font-size:11px;letter-spacing:2px;text-transform:uppercase">TRAJET</th></tr></thead>'
     +'<tbody>'
-    +'<tr><td style="padding:7px 10px;font-weight:700;color:#718096;width:20%;background:#F8F8F8">Embarquement</td><td><strong>'+b.lieu_embarquement+'</strong></td><td style="font-weight:700;color:#718096;width:15%;background:#F8F8F8">Destination</td><td><strong>'+b.destination+'</strong></td></tr>'
-    +'<tr><td style="padding:7px 10px;font-weight:700;color:#718096;background:#F8F8F8">Durée du trajet</td><td colspan="3">'+(b.duree_min?b.duree_min+' minutes':'—')+'</td></tr>'
-    +'<tr><td style="padding:7px 10px;font-weight:700;color:#718096;background:#F8F8F8">Observations</td><td colspan="3">'+(b.observations||'—')+'</td></tr>'
+    +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;width:22%;background:#F8F9FA;border:1px solid #E9ECEF">Lieu d embarquement</td>'
+    +'<td style="padding:8px 12px;font-weight:700;border:1px solid #E9ECEF;width:28%">'+b.lieu_embarquement+'</td>'
+    +'<td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF;width:22%">Destination</td>'
+    +'<td style="padding:8px 12px;font-weight:700;border:1px solid #E9ECEF">'+b.destination+'</td></tr>'
+    +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF">Observations</td>'
+    +'<td colspan="3" style="padding:8px 12px;border:1px solid #E9ECEF">'+(b.observations||'—')+'</td></tr>'
     +'</tbody></table>'
-    // PAIEMENT
+
+    // ── PAIEMENT (si applicable) ──
     +(b.montant_especes?
-    '<table style="width:100%;border-collapse:collapse;margin-bottom:12px">'
-    +'<thead><tr style="background:#E8501A;color:#fff"><th colspan="4" style="padding:8px 12px;text-align:left;font-size:12px;letter-spacing:1px">PAIEMENT</th></tr></thead>'
-    +'<tbody>'
-    +'<tr><td style="padding:7px 10px;font-weight:700;color:#718096;width:20%;background:#F8F8F8">Mode</td><td>Espèces</td><td style="font-weight:700;color:#718096;width:15%;background:#F8F8F8">Montant</td><td><strong style="color:#E8501A;font-size:16px">'+parseFloat(b.montant_especes).toFixed(2)+' €</strong></td></tr>'
-    +'<tr><td style="padding:7px 10px;font-weight:700;color:#718096;background:#F8F8F8">N° Reçu</td><td colspan="3" style="font-family:monospace;color:#E8501A;font-weight:700">'+b.recu_num+'</td></tr>'
-    +'</tbody></table>'
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px">'
+      +'<thead><tr><th colspan="4" style="background:#E8501A;color:#fff;padding:8px 12px;text-align:left;font-size:11px;letter-spacing:2px;text-transform:uppercase">PAIEMENT</th></tr></thead>'
+      +'<tbody>'
+      +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;width:22%;background:#F8F9FA;border:1px solid #E9ECEF">Mode</td>'
+      +'<td style="padding:8px 12px;border:1px solid #E9ECEF;width:28%">Espèces</td>'
+      +'<td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF;width:22%">Montant</td>'
+      +'<td style="padding:8px 12px;font-weight:900;font-size:15px;color:#E8501A;border:1px solid #E9ECEF">'+parseFloat(b.montant_especes).toFixed(2)+' €</td></tr>'
+      +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF">N° Reçu</td>'
+      +'<td colspan="3" style="padding:8px 12px;font-family:monospace;font-weight:700;color:#E8501A;border:1px solid #E9ECEF">'+b.recu_num+'</td></tr>'
+      +'</tbody></table>'
     :'')
-    // PHOTO + SIGNATURE avec filigrane KAB
-    +'<div style="position:relative;margin-bottom:16px">'
-    // FILIGRANE KAB
-    +'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-family:Arial,cursive;font-size:110px;font-weight:900;color:rgba(20,50,120,0.07);pointer-events:none;white-space:nowrap;z-index:0;width:100%;text-align:center">KAB</div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative;z-index:1">'
+
+    // ── PHOTO + SIGNATURE + FILIGRANE KAB ──
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:14px">'
+    +'<thead><tr><th colspan="2" style="background:#E8501A;color:#fff;padding:8px 12px;text-align:left;font-size:11px;letter-spacing:2px;text-transform:uppercase">PHOTO DU VÉHICULE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SIGNATURE DU CLIENT</th></tr></thead>'
+    +'<tbody><tr>'
     // PHOTO
-    +'<div style="border:1.5px solid #E0E0E0;border-radius:8px;overflow:hidden;min-height:200px">'
-    +'<div style="background:#E8501A;color:#fff;padding:7px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px">📷 Photo du véhicule</div>'
-    +'<div style="padding:10px;display:flex;align-items:center;justify-content:center;min-height:180px;background:#fafafa">'
-    +(photoSrc?'<img src="'+photoSrc+'" style="max-width:100%;max-height:200px;object-fit:contain;border-radius:6px" alt="Photo véhicule">'
-    :'<div style="text-align:center;color:#aaa;font-size:12px;padding:20px">Aucune photo</div>')
-    +'</div></div>'
+    +'<td style="width:50%;padding:10px;border:1px solid #E9ECEF;vertical-align:top;min-height:200px;position:relative">'
+    +(photoSrc
+      ?'<img src="'+photoSrc+'" style="max-width:100%;max-height:220px;object-fit:contain;display:block;margin:0 auto;border-radius:6px" alt="Photo vehicule">'
+      :'<div style="height:200px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:13px;border:2px dashed #E0E0E0;border-radius:6px">Aucune photo</div>')
+    +'</td>'
     // SIGNATURE
-    +'<div style="border:1.5px solid #E0E0E0;border-radius:8px;overflow:hidden;min-height:200px">'
-    +'<div style="background:#E8501A;color:#fff;padding:7px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px">✍️ Signature du client</div>'
-    +'<div style="padding:10px;display:flex;align-items:center;justify-content:center;min-height:180px;background:#fafafa">'
-    +(b.signature?'<img src="'+b.signature+'" style="max-width:100%;max-height:160px;object-fit:contain" alt="Signature">'
-    :'<div style="text-align:center;color:#aaa;font-size:12px;padding:20px">Aucune signature</div>')
-    +'</div></div>'
-    +'</div></div>'
-    // PIED DE PAGE
-    +'<div style="border-top:3px solid #E8501A;padding-top:10px;text-align:center;font-size:11px;color:#718096;margin-top:4px">'
-    +'<strong style="color:#2D3748;font-size:13px">'+cfg.nom+'</strong><br>'
-    +cfg.adr+(cfg.ville?' • '+cfg.ville:'')+(cfg.tel?' • Tél : '+cfg.tel:'')+(cfg.email?' • '+cfg.email:'')
+    +'<td style="width:50%;padding:10px;border:1px solid #E9ECEF;vertical-align:top;min-height:200px;position:relative">'
+    +(b.signature
+      ?'<img src="'+b.signature+'" style="max-width:100%;max-height:150px;object-fit:contain;display:block;margin:0 auto" alt="Signature">'
+      :'<div style="height:200px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:13px;border:2px dashed #E0E0E0;border-radius:6px">Aucune signature</div>')
+    +'</td>'
+    +'</tr></tbody></table>'
+
+    // ── FILIGRANE KAB EN DIAGONAL ──
+    +'<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Comic Sans MS,ComicSansMS,cursive;font-size:120px;font-weight:900;color:rgba(20,50,120,0.06);pointer-events:none;white-space:nowrap;z-index:0;user-select:none">KAB</div>'
+
+    // ── PIED DE PAGE ──
+    +'<div style="position:fixed;bottom:15px;left:0;right:0;border-top:3px solid #E8501A;padding-top:8px;text-align:center;font-size:11px;color:#718096">'
+    +'<strong style="color:#2D3748;font-size:12px">'+cfg.nom+'</strong>'
+    +(cfg.adr?' &bull; '+cfg.adr:'')+(cfg.ville?' '+cfg.ville:'')+(cfg.tel?' &bull; '+cfg.tel:'')+(cfg.email?' &bull; '+cfg.email:'')
     +'<br><em>Document généré le '+fmtDate(new Date())+'</em>'
     +'</div>'
     +'</div>'
@@ -2701,6 +2844,87 @@ function genBLPDF(b){
 // ══════════════════════════════════════════════════════════
 //  GÉNÉRATION PDF — REÇU
 // ══════════════════════════════════════════════════════════
+function genRecuPDF(r){
+  currentPDFData={type:'recu',data:r};
+  var cont=G('modal-pdf-content');
+  var cfg=getConfig();
+  cont.innerHTML=renderRecuHTML(r,cfg);
+  G('modal-pdf-title').textContent='Reçu — '+r.recu_num;
+  openModal('modal-pdf');
+}
+
+function renderRecuHTML(r,cfg){
+  var montant=parseFloat(r.montant_especes)||0;
+  var dateFR=formatDateFR(r.date_bl);
+  var logoG=cfg.logoG||''; var logoD=cfg.logoD||'';
+
+  return (
+    '<div style="font-family:Arial,sans-serif;width:100%;max-width:700px;margin:0 auto;padding:24px;font-size:13px;position:relative;box-sizing:border-box">'
+
+    // ── EN-TÊTE ──
+    +'<div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:3px solid #E8501A;margin-bottom:14px">'
+    +(logoG?'<img src="'+logoG+'" style="max-width:120px;max-height:90px;object-fit:contain" alt="">':'<div style="width:120px"></div>')
+    +'<div style="flex:1;text-align:center;padding:0 16px">'
+    +'<div style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px">REÇU DE PAIEMENT — N°</div>'
+    +'<div style="font-size:30px;font-weight:900;color:#E8501A;font-family:monospace;letter-spacing:2px">'+r.recu_num+'</div>'
+    +'</div>'
+    +(logoD?'<img src="'+logoD+'" style="max-width:160px;max-height:90px;object-fit:contain" alt="">':'<div style="width:160px"></div>')
+    +'</div>'
+
+    // ── DATE + BL ──
+    +'<div style="display:flex;justify-content:space-between;background:#F8F9FA;padding:8px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;border:1px solid #E9ECEF">'
+    +'<div><strong>Date :</strong> '+dateFR+'</div>'
+    +'<div><strong>Bon de livraison :</strong> <span style="font-family:monospace;font-weight:700;color:#2D3748">'+r.bon_num+'</span></div>'
+    +'</div>'
+
+    // ── CLIENT ──
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:14px">'
+    +'<tbody>'
+    +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;width:35%;background:#F8F9FA;border:1px solid #E9ECEF">REÇU DE</td>'
+    +'<td style="padding:8px 12px;font-size:16px;font-weight:900;border:1px solid #E9ECEF">'+r.nom_client+'</td></tr>'
+    +'<tr><td style="padding:8px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF">TÉLÉPHONE</td>'
+    +'<td style="padding:8px 12px;border:1px solid #E9ECEF">'+(r.tel_client||'—')+'</td></tr>'
+    +'</tbody></table>'
+
+    // ── MONTANT ──
+    +'<div style="background:#FFF8E1;border:2px solid #D4A800;border-radius:10px;padding:20px;text-align:center;margin-bottom:14px">'
+    +'<div style="font-size:11px;font-weight:700;color:#7A5C00;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">MONTANT REÇU EN ESPÈCES</div>'
+    +'<div style="font-size:38px;font-weight:900;color:#2D3748">'+montant.toFixed(2)+' €</div>'
+    +'<div style="font-size:12px;color:#7A5C00;margin-top:6px;font-style:italic">Soit : '+montantEnLettres(montant)+'</div>'
+    +'</div>'
+
+    // ── PRESTATION ──
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:16px">'
+    +'<tbody>'
+    +'<tr><td style="padding:7px 12px;font-weight:700;color:#718096;width:35%;background:#F8F9FA;border:1px solid #E9ECEF;font-size:11px;text-transform:uppercase">Pour la prestation</td>'
+    +'<td style="padding:7px 12px;border:1px solid #E9ECEF">Transport / dépannage du véhicule '+r.marque+' '+r.modele+'</td></tr>'
+    +'<tr><td style="padding:7px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF;font-size:11px;text-transform:uppercase">Trajet</td>'
+    +'<td style="padding:7px 12px;border:1px solid #E9ECEF">'+r.lieu_embarquement+' &rarr; '+r.destination+'</td></tr>'
+    +'<tr><td style="padding:7px 12px;font-weight:700;color:#718096;background:#F8F9FA;border:1px solid #E9ECEF;font-size:11px;text-transform:uppercase">Encaissé par</td>'
+    +'<td style="padding:7px 12px;border:1px solid #E9ECEF;font-weight:700">'+r.chauffeur_nom+'</td></tr>'
+    +'</tbody></table>'
+
+    // ── ZONE CACHET PAYÉ + FILIGRANE KAB ──
+    +'<div style="position:relative;min-height:160px;display:flex;align-items:center;justify-content:flex-end;padding-right:40px">'
+    // Filigrane KAB
+    +'<div style="position:absolute;top:50%;left:30%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Comic Sans MS,ComicSansMS,cursive;font-size:100px;font-weight:900;color:rgba(20,50,120,0.07);pointer-events:none;white-space:nowrap;user-select:none">KAB</div>'
+    // Cachet PAYÉ ovale bleu
+    +'<div style="position:relative;z-index:1;width:160px;height:95px;border:5px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.9)">'
+    +'<div style="font-size:26px;font-weight:900;color:#1565C0;font-family:Comic Sans MS,ComicSansMS,cursive;line-height:1;text-align:center">P A Y É</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#1565C0;margin-top:6px;text-align:center">le '+dateFR+'</div>'
+    +'</div>'
+    +'</div>'
+
+    // ── PIED DE PAGE ──
+    +'<div style="position:fixed;bottom:15px;left:0;right:0;border-top:3px solid #E8501A;padding-top:8px;text-align:center;font-size:11px;color:#718096">'
+    +'<strong style="color:#2D3748;font-size:12px">'+cfg.nom+'</strong>'
+    +(cfg.adr?' &bull; '+cfg.adr:'')+(cfg.ville?' '+cfg.ville:'')+(cfg.tel?' &bull; '+cfg.tel:'')+(cfg.email?' &bull; '+cfg.email:'')
+    +'<br><em>Document généré le '+fmtDate(new Date())+'</em>'
+    +'</div>'
+    +'</div>'
+  );
+}
+
 function genRecuPDF(r){
   currentPDFData={type:'recu',data:r};
   var cont=G('modal-pdf-content');
@@ -2992,11 +3216,11 @@ function soumettreMBL(){
   var dest=G('mbl-dest').value.trim();
   var dateVal=G('mbl-date').value;
   if(!chaufId){err.textContent="Choisissez un chauffeur";err.classList.add('on');return;}
-  if(!immat){err.textContent="Saisissez l'immatriculation";err.classList.add('on');return;}
+  if(!immat){err.textContent="Saisissez immatriculation";err.classList.add('on');return;}
   if(!marque){err.textContent="Choisissez la marque";err.classList.add('on');return;}
   if(!modele){err.textContent="Choisissez le modèle";err.classList.add('on');return;}
   if(!client){err.textContent="Saisissez le nom du client";err.classList.add('on');return;}
-  if(!emb){err.textContent="Saisissez l'embarquement";err.classList.add('on');return;}
+  if(!emb){err.textContent="Saisissez embarquement";err.classList.add('on');return;}
   if(!dest){err.textContent="Saisissez la destination";err.classList.add('on');return;}
   var users=getUsers();
   var u=users.find(function(x){return x.id===chaufId});
@@ -3078,6 +3302,76 @@ function assignerCamionTmp(){
   ok.textContent='✅ Camion '+camNom+' ('+camImmat+') assigné à '+users[idx].nom;
   ok.classList.add('on');
   setTimeout(function(){ok.classList.remove('on');},4000);
+}
+
+function admTab(id,btn){
+  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
+  G('adm-'+id).classList.add('on'); btn.classList.add('on');
+  if(id==='camion-tmp') admInitCamionTmp();
+}
+
+function admInitCamionTmp(){
+  var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
+  var sel=G('adm-tmp-chauf-sel');
+  if(!sel) return;
+  sel.innerHTML='<option value="">-- Choisir chauffeur --</option>';
+  users.forEach(function(u){
+    sel.innerHTML+='<option value="'+u.id+'">'+u.nom+'</option>';
+  });
+  admMajCamionsTmp();
+  admAfficherEtatChauffeurs();
+}
+
+function admMajCamionsTmp(){
+  var id=G('adm-tmp-chauf-sel').value;
+  var users=getUsers();
+  var u=users.find(function(x){return x.id===id});
+  G('adm-tmp-camion-actuel').value=u?(u.camion||'Aucun')+(u.immatCam?' ('+u.immatCam+')':''):'';
+  var camions=getCamions().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
+  var sel=G('adm-tmp-camion-sel');
+  sel.innerHTML='<option value="">-- Choisir camion --</option>';
+  camions.forEach(function(c){
+    sel.innerHTML+='<option value="'+c.id+'" data-nom="'+c.nom+'" data-immat="'+c.immat+'">'+c.nom+' ('+c.immat+')</option>';
+  });
+}
+
+function admAssignerCamionTmp(){
+  var chaufId=G('adm-tmp-chauf-sel').value;
+  var camSel=G('adm-tmp-camion-sel');
+  var camId=camSel.value;
+  var ok=G('adm-tmp-cam-ok');
+  var err=G('adm-tmp-cam-err');
+  ok.classList.remove('on'); err.classList.remove('on');
+  if(!chaufId){err.textContent="Choisissez un chauffeur";err.classList.add('on');return;}
+  if(!camId){err.textContent="Choisissez un camion";err.classList.add('on');return;}
+  var opt=camSel.options[camSel.selectedIndex];
+  var camNom=opt.dataset.nom||'';
+  var camImmat=opt.dataset.immat||'';
+  var users=getUsers();
+  var idx=users.findIndex(function(u){return u.id===chaufId});
+  if(idx<0){err.textContent="Chauffeur introuvable";err.classList.add('on');return;}
+  var nomChauf=users[idx].nom;
+  users[idx].camion=camNom;
+  users[idx].immatCam=camImmat;
+  saveUsers(users);
+  chargerChauffeursAdmin();
+  admAfficherEtatChauffeurs();
+  ok.textContent='✅ Camion '+camNom+' ('+camImmat+') assigné à '+nomChauf;
+  ok.classList.add('on');
+  setTimeout(function(){ok.classList.remove('on');},4000);
+  G('adm-tmp-chauf-sel').value='';
+  G('adm-tmp-camion-actuel').value='';
+}
+
+function admAfficherEtatChauffeurs(){
+  var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
+  var cont=G('adm-tmp-chauf-etat');
+  if(!cont) return;
+  if(!users.length){cont.innerHTML='<p style="color:var(--mt);font-size:13px">Aucun chauffeur configuré</p>';return;}
+  cont.innerHTML=users.map(function(u){
+    return '<div class="list-item"><div style="flex:1"><div class="li-name">'+u.nom+'</div><div class="li-sub">Camion : '+(u.camion||'Aucun')+(u.immatCam?' ('+u.immatCam+')':'')+'</div></div></div>';
+  }).join('');
 }
 
 function initCamionTmpSelects(){

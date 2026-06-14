@@ -1139,12 +1139,12 @@ function fmtRC(pref,n){return pref+'/R-'+fmtNum(n)}
 
 // ── TRI TABLEAUX ─────────────────────────────────────────
 function parseDateHeure(dateStr, heureStr){
-  // Convertir date dd/MM/yyyy et heure HHhMM en timestamp
   var d=parseLocalDate(formatDateFR(String(dateStr||'')));
   if(!d) return 0;
   var ts=d.getTime();
   if(heureStr){
-    var h=String(heureStr).replace('h',':').replace('H',':');
+    var hFR=formatHeureFR(String(heureStr));
+    var h=hFR.replace('h',':');
     var parts=h.split(':');
     if(parts.length>=2){
       ts+=parseInt(parts[0]||0)*3600000+parseInt(parts[1]||0)*60000;
@@ -1164,6 +1164,52 @@ function parseLocalDate(str){
 }
 
 // Formater une date en dd/MM/yyyy
+function formatHeureFR(str){
+  if(!str) return '';
+  str=String(str).trim();
+  // Déjà format HHhMM ou HH:MM
+  if(/^\d{1,2}h\d{2}$/.test(str)) return str;
+  if(/^\d{1,2}:\d{2}$/.test(str)){
+    var p=str.split(':');
+    return ('0'+p[0]).slice(-2)+'h'+('0'+p[1]).slice(-2);
+  }
+  // Format Date JS long "Sun Jun 14 2026 11:24:00 GMT+..."
+  if(str.length>10){
+    try{
+      var d=new Date(str);
+      if(!isNaN(d.getTime())){
+        return ('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2);
+      }
+    }catch(e){}
+  }
+  return str;
+}
+
+function formatHeureFR(str){
+  if(!str) return '';
+  str=String(str).trim();
+  // Déjà format HHhMM
+  if(/^\d{1,2}h\d{2}$/.test(str)) return str;
+  // Format HH:MM
+  if(/^\d{1,2}:\d{2}/.test(str)){
+    var p=str.split(':');
+    return ('0'+p[0]).slice(-2)+'h'+('0'+p[1]).slice(-2);
+  }
+  // Format Date JS long
+  if(str.indexOf('GMT')>=0 || /^[A-Z][a-z]{2}\s/.test(str)){
+    try{
+      var d=new Date(str);
+      if(!isNaN(d.getTime())){
+        return ('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2);
+      }
+    }catch(e){}
+  }
+  // Extraire HHhMM depuis une string qui contient ce pattern
+  var m=str.match(/(\d{1,2}h\d{2})/);
+  if(m) return m[1];
+  return str.substring(0,5);
+}
+
 function formatDateFR(str){
   if(!str) return '';
   str=String(str).trim();
@@ -2351,7 +2397,7 @@ function renderBLTable(bls,tbodyId,isAdmin){
     var bid='b'+i;
     blDataStore[bid]=b;
     var dateFR=formatDateFR(String(b.date_bl||''));
-    var heure=b.heure_bl?String(b.heure_bl):'';
+    var heure=formatHeureFR(b.heure_bl);
     var dateAff=dateFR+(heure?' — '+heure:'');
     var tnBadge=b.tn_tw?'<span class="badge bdg-'+(b.tn_tw==='TW'?'bl':'re')+'">'+b.tn_tw+'</span>':'<span class="badge bdg-gy">—</span>';
     var paiement=b.montant_especes?(parseFloat(b.montant_especes||0).toFixed(2)+' €'):'—';
@@ -2428,6 +2474,7 @@ function renderRecusTable(recus,tbodyId,isAdmin){
     var rid='r'+i;
     rcDataStore[rid]=r;
     var dateFR=formatDateFR(String(r.date_bl||''));
+    var heureRC=formatHeureFR(r.heure_bl||'');
     var del=isAdmin?'<button class="tbtn tbtn-re rc-del" data-num="'+r.recu_num+'">🗑</button>':'';
     return '<tr>'
       +'<td style="font-family:monospace;font-weight:700;color:var(--or);white-space:nowrap">'+r.recu_num+'</td>'
@@ -3167,6 +3214,7 @@ function renderBLHTML(b,cfg){
     sigSrc=b.signature_url;
   }
   var dateFR=formatDateFR(String(b.date_bl||''));
+  var heureFR=formatHeureFR(b.heure_bl||'');
   var logoG=cfg.logoG||''; var logoD=cfg.logoD||'';
   var nom=cfg.nom||'Multi Auto Center';
   var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');

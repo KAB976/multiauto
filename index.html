@@ -475,7 +475,7 @@ tr:nth-child(even) td{background:var(--gy)}
   <div class="content">
 
     <!-- BL -->
-    <div class="sub-pg on" id="sec-bl">
+    <div class="sub-pg on" style="display:block" id="sec-bl">
       <div class="card">
         <div class="card-title"><span class="ico">📋</span> Bons de livraison</div>
         <button class="btn btn-or" onclick="ouvrirModalBL('secretaire')" style="margin-bottom:14px">➕ Nouveau bon de livraison</button>
@@ -491,7 +491,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- REÇUS -->
-    <div class="sub-pg" id="sec-recus">
+    <div class="sub-pg" style="display:none" id="sec-recus">
       <div class="card">
         <div class="card-title"><span class="ico">🧾</span> Reçus de paiement</div>
         <div class="filtres">
@@ -505,7 +505,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- CLIENTS -->
-    <div class="sub-pg" id="sec-camion-tmp" style="display:none">
+    <div class="sub-pg" style="display:none" id="sec-camion-tmp" style="display:none">
       <div class="card" id="sec-camion-tmp-card">
         <div class="card-title"><span class="ico">🔄</span> Changement de camion temporaire</div>
         <p style="font-size:13px;color:var(--mt);margin-bottom:12px">Assigner temporairement un autre camion à un chauffeur.</p>
@@ -524,7 +524,7 @@ tr:nth-child(even) td{background:var(--gy)}
       </div>
     </div>
 
-    <div class="sub-pg" id="sec-clients">
+    <div class="sub-pg" style="display:none" id="sec-clients">
       <div class="card">
         <div class="card-title"><span class="ico">👥</span> Gestion des clients</div>
         <div class="al al-gr" id="sec-cli-ok"></div>
@@ -537,7 +537,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- VEHICULES -->
-    <div class="sub-pg" id="sec-vehicules">
+    <div class="sub-pg" style="display:none" id="sec-vehicules">
       <div class="card">
         <div class="card-title"><span class="ico">🚗</span> Marques et Modèles</div>
         <div class="al al-gr" id="sec-veh-ok"></div>
@@ -547,7 +547,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- STATS -->
-    <div class="sub-pg" id="sec-stats">
+    <div class="sub-pg" style="display:none" id="sec-stats">
       <div class="card">
         <div class="card-title"><span class="ico">📊</span> Statistiques</div>
         <div class="filtres">
@@ -591,7 +591,7 @@ tr:nth-child(even) td{background:var(--gy)}
   <div class="content">
 
     <!-- DASHBOARD -->
-    <div class="sub-pg on" id="adm-dashboard">
+    <div class="sub-pg on" style="display:block" id="adm-dashboard">
       <div class="stat-grid" id="adm-dash-stats">
         <div class="stat-box or"><div class="stat-val" id="ds-bl">—</div><div class="stat-lbl">Bons de livraison</div></div>
         <div class="stat-box gr"><div class="stat-val" id="ds-recus">—</div><div class="stat-lbl">Reçus</div></div>
@@ -609,7 +609,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- BL & REÇUS -->
-    <div class="sub-pg" id="adm-bl">
+    <div class="sub-pg" style="display:none" id="adm-bl">
       <div class="card">
         <div class="card-title"><span class="ico">📋</span> Bons de livraison</div>
         <button class="btn btn-or" onclick="ouvrirModalBL('admin')" style="margin-bottom:14px">➕ Nouveau bon de livraison</button>
@@ -634,7 +634,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- GPS TRAJETS -->
-    <div class="sub-pg" id="adm-gps">
+    <div class="sub-pg" style="display:none" id="adm-gps">
       <div class="card">
         <div class="card-title"><span class="ico">🗺️</span> GPS — Données de trajets</div>
         <div class="al al-bl">🔒 Ces données GPS sont visibles uniquement par l'administrateur</div>
@@ -650,7 +650,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- CHAUFFEURS -->
-    <div class="sub-pg" id="adm-chauffeurs">
+    <div class="sub-pg" style="display:none" id="adm-chauffeurs">
       <div class="card">
         <div class="card-title"><span class="ico">👨‍✈️</span> Gestion des chauffeurs</div>
         <div class="al al-gr" id="adm-ch-ok"></div>
@@ -683,7 +683,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- CAMION TEMPORAIRE -->
-    <div class="sub-pg" id="adm-camion-tmp">
+    <div class="sub-pg" style="display:none" id="adm-camion-tmp">
       <div class="card">
         <div class="card-title"><span class="ico">🔄</span> Changement de camion temporaire</div>
         <p style="font-size:13px;color:var(--mt);margin-bottom:14px">Assignez temporairement un autre camion à un chauffeur. Le chauffeur verra le nouveau camion dans son application.</p>
@@ -720,7 +720,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- CAMIONS -->
-    <div class="sub-pg" id="adm-camions">
+    <div class="sub-pg" style="display:none" id="adm-camions">
       <div class="card">
         <div class="card-title"><span class="ico">🚛</span> Gestion des camions</div>
         <div class="al al-gr" id="adm-cam-ok"></div>
@@ -730,7 +730,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- VEHICULES -->
-    <div class="sub-pg" id="adm-vehicules">
+    <div class="sub-pg" style="display:none" id="adm-vehicules">
       <div class="card">
         <div class="card-title"><span class="ico">🚗</span> Marques et Modèles de véhicules</div>
         <div class="al al-gr" id="adm-veh-ok"></div>
@@ -740,7 +740,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- STATISTIQUES -->
-    <div class="sub-pg" id="adm-stats">
+    <div class="sub-pg" style="display:none" id="adm-stats">
       <div class="card">
         <div class="card-title"><span class="ico">📊</span> Statistiques complètes</div>
         <div class="filtres">
@@ -776,7 +776,7 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- PARAMÈTRES -->
-    <div class="sub-pg" id="adm-config">
+    <div class="sub-pg" style="display:none" id="adm-config">
       <div class="card">
         <div class="card-title"><span class="ico">🏢</span> Paramètres de la société</div>
         <div class="al al-gr" id="adm-cfg-ok"></div>
@@ -1656,9 +1656,17 @@ function assignerCamionTmp(){
 }
 
 function admTab(id,btn){
-  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
+    p.classList.remove('on');
+    p.style.display='none';
+  });
   document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
-  G('adm-'+id).classList.add('on'); btn.classList.add('on');
+  var el=G('adm-'+id);
+  if(el){
+    el.style.display='block';
+    el.classList.add('on');
+  }
+  btn.classList.add('on');
   if(id==='camion-tmp') admInitCamionTmp();
 }
 
@@ -2190,6 +2198,15 @@ function entrerSecretaire(){
   chargerClientsTable();
   chargerMarquesListSec();
   secInitCamionTmp();
+  // S'assurer que seul le premier onglet est visible
+  document.querySelectorAll('#pg-secretaire .sub-pg').forEach(function(p){
+    p.style.display='none';
+    p.classList.remove('on');
+  });
+  var firstTab=G('sec-bl');
+  if(firstTab){firstTab.style.display='block';firstTab.classList.add('on');}
+  var firstBtn=document.querySelector('#pg-secretaire .nav-btn');
+  if(firstBtn){firstBtn.classList.add('on');}
   setTimeout(appliquerPermissionsSecretaire,300);
 }
 
@@ -2233,10 +2250,18 @@ function secAssignerCamionTmp(){
 }
 
 function secTab(id,btn){
-  document.querySelectorAll('#pg-secretaire .sub-pg').forEach(function(p){p.classList.remove('on')});
+  // Cacher tous les onglets
+  document.querySelectorAll('#pg-secretaire .sub-pg').forEach(function(p){
+    p.classList.remove('on');
+    p.style.display='none';
+  });
   document.querySelectorAll('#pg-secretaire .nav-btn').forEach(function(b){b.classList.remove('on')});
+  // Afficher l'onglet sélectionné
   var el=G('sec-'+id);
-  if(el){el.style.display='block';el.classList.add('on');}
+  if(el){
+    el.style.display='block';
+    el.classList.add('on');
+  }
   btn.classList.add('on');
   if(id==='camion-tmp') secInitCamionTmp();
 }
@@ -3663,9 +3688,17 @@ function assignerCamionTmp(){
 }
 
 function admTab(id,btn){
-  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
+    p.classList.remove('on');
+    p.style.display='none';
+  });
   document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
-  G('adm-'+id).classList.add('on'); btn.classList.add('on');
+  var el=G('adm-'+id);
+  if(el){
+    el.style.display='block';
+    el.classList.add('on');
+  }
+  btn.classList.add('on');
   if(id==='camion-tmp') admInitCamionTmp();
 }
 

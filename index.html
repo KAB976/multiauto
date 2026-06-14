@@ -1089,7 +1089,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxonRrE1g8IPFEwxO-zRTWNk7724LCv51NZIAkVnugsGG1M1WO4v2T0MmZgnKSVl7O7YQ/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0STKQ0nC42UZpgQpn0Ut4ujr6iqKNcnDdje2R5pSblAmpqJ5MEi-ZYfAIYkKgcJWlEw/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1327,7 +1327,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbxonRrE1g8IPFEwxO-zRTWNk7724LCv51NZIAkVnugsGG1M1WO4v2T0MmZgnKSVl7O7YQ/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycby0STKQ0nC42UZpgQpn0Ut4ujr6iqKNcnDdje2R5pSblAmpqJ5MEi-ZYfAIYkKgcJWlEw/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -2310,6 +2310,13 @@ function secLoadBL(){
     var bls=filtrerParDate(data.bls||[],'date_bl',G('sec-bl-d1').value,G('sec-bl-d2').value);
     var chauf=G('sec-bl-chauf').value;
     if(chauf) bls=bls.filter(function(b){return b.chauffeur_nom===chauf});
+    // Tri par date décroissante avant affichage
+    bls.sort(function(a,b2){
+      var da=parseLocalDate(formatDateFR(String(a.date_bl||'')));
+      var db=parseLocalDate(formatDateFR(String(b2.date_bl||'')));
+      if(da&&db) return db.getTime()-da.getTime();
+      return 0;
+    });
     renderBLTable(bls,'sec-bl-body',false);
     renderStatsBL(bls,'sec-bl-stats');
   });
@@ -2386,6 +2393,12 @@ function secLoadRecus(){
     var recus=filtrerParDate(data.recus||[],'date_bl',G('sec-rc-d1').value,G('sec-rc-d2').value);
     var chauf=G('sec-rc-chauf').value;
     if(chauf) recus=recus.filter(function(r){return r.chauffeur_nom===chauf});
+    recus.sort(function(a,b){
+      var da=parseLocalDate(formatDateFR(String(a.date_bl||'')));
+      var db=parseLocalDate(formatDateFR(String(b.date_bl||'')));
+      if(da&&db) return db.getTime()-da.getTime();
+      return 0;
+    });
     renderRecusTable(recus,'sec-rc-body',false);
   });
 }
@@ -2586,6 +2599,12 @@ function admLoadBL(){
     var bls=filtrerParDate(data.bls||[],'date_bl',G('adm-bl-d1').value,G('adm-bl-d2').value);
     var chauf=G('adm-bl-chauf').value;
     if(chauf) bls=bls.filter(function(b){return b.chauffeur_nom===chauf});
+    bls.sort(function(a,b2){
+      var da=parseLocalDate(formatDateFR(String(a.date_bl||'')));
+      var db=parseLocalDate(formatDateFR(String(b2.date_bl||'')));
+      if(da&&db) return db.getTime()-da.getTime();
+      return 0;
+    });
     renderBLTable(bls,'adm-bl-body',true);
   });
 }
@@ -2598,6 +2617,12 @@ function admLoadRecus(){
     var recus=filtrerParDate(data.recus||[],'date_bl',G('adm-rc-d1').value,G('adm-rc-d2').value);
     var chauf=G('adm-rc-chauf').value;
     if(chauf) recus=recus.filter(function(r){return r.chauffeur_nom===chauf});
+    recus.sort(function(a,b){
+      var da=parseLocalDate(formatDateFR(String(a.date_bl||'')));
+      var db=parseLocalDate(formatDateFR(String(b.date_bl||'')));
+      if(da&&db) return db.getTime()-da.getTime();
+      return 0;
+    });
     renderRecusTable(recus,'adm-rc-body',true);
   });
 }
@@ -2916,20 +2941,53 @@ function imprimerDoc(data,type){
   var cfg=getConfig();
   var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
   var nom=type==='bl'?data.bon_num:data.recu_num;
-  var win=window.open('','_blank','width=900,height=750');
+  var win=window.open('','_blank');
   if(!win){showToast('Autorisez les popups Chrome');return;}
-  win.document.write(getPrintHTML(html,nom,false));
+  win.document.write(
+    '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+nom+'</title>'
+    +'<style>'
+    +'*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    +'body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#fff}'
+    +'@page{margin:8mm;size:A4 portrait}'
+    +'@media print{body{margin:0;padding:0}}'
+    +'img{max-width:100%!important;image-orientation:from-image!important}'
+    +'</style>'
+    +'</head><body>'
+    +html
+    +'<script>'
+    +'window.addEventListener("load",function(){'
+    +'  setTimeout(function(){window.print();},800);'
+    +'});'
+    +'<\/script>'
+    +'</body></html>'
+  );
   win.document.close();
-  win.onload=function(){win.print();};
 }
 
 function telechargerDoc(data,type){
   var cfg=getConfig();
   var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
   var nom=type==='bl'?data.bon_num:data.recu_num;
-  var win=window.open('','_blank','width=880,height=720');
-  if(!win){showToast('Autorisez les popups pour télécharger');return;}
-  win.document.write(getPrintHTML(html,nom,true));
+  var win=window.open('','_blank');
+  if(!win){showToast('Autorisez les popups Chrome pour télécharger');return;}
+  win.document.write(
+    '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+nom+'</title>'
+    +'<style>'
+    +'*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    +'body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#fff}'
+    +'@page{margin:8mm;size:A4 portrait}'
+    +'@media print{body{margin:0;padding:0}}'
+    +'img{max-width:100%!important;image-orientation:from-image!important}'
+    +'</style>'
+    +'</head><body>'
+    +html
+    +'<script>'
+    +'window.addEventListener("load",function(){'
+    +'  setTimeout(function(){window.print();},800);'
+    +'});'
+    +'<\/script>'
+    +'</body></html>'
+  );
   win.document.close();
 }
 
@@ -2976,19 +3034,20 @@ function voirBL(b){
 
 function renderBLHTML(b,cfg){
   var tnBadge=b.tn_tw?'<span style="background:'+(b.tn_tw==='TW'?'#2563EB':'#C0392B')+';color:#fff;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:900;margin-left:8px">'+b.tn_tw+'</span>':'';
+  // Photo: base64 direct ou URL déjà convertie par Apps Script
   var photoSrc='';
-  if(b.photo_vehicule && b.photo_vehicule.indexOf('data:')===0){
+  if(b.photo_vehicule && b.photo_vehicule.length>10){
     photoSrc=b.photo_vehicule;
-  } else if(b.photo_url && b.photo_url.indexOf('http')===0){
-    var m=b.photo_url.match(/[?&]id=([^&]+)/)||b.photo_url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if(m) photoSrc='https://lh3.googleusercontent.com/d/'+m[1]+'=w800';
-    else photoSrc=b.photo_url;
-  } else if(b.photo_vehicule && b.photo_vehicule.indexOf('http')===0){
-    var m=b.photo_vehicule.match(/[?&]id=([^&]+)/)||b.photo_vehicule.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if(m) photoSrc='https://lh3.googleusercontent.com/d/'+m[1]+'=w800';
-    else photoSrc=b.photo_vehicule;
+  } else if(b.photo_url && b.photo_url.length>10){
+    photoSrc=b.photo_url;
   }
-  var sigSrc=b.signature&&(b.signature.indexOf('data:')===0)?b.signature:'';
+  // Signature: base64 ou URL Drive
+  var sigSrc='';
+  if(b.signature && b.signature.length>10){
+    sigSrc=b.signature; // base64 ou URL Drive
+  } else if(b.signature_url && b.signature_url.length>10){
+    sigSrc=b.signature_url;
+  }
   var dateFR=formatDateFR(String(b.date_bl||''));
   var logoG=cfg.logoG||''; var logoD=cfg.logoD||'';
   var nom=cfg.nom||'Multi Auto Center';
@@ -3108,6 +3167,99 @@ function genRecuPDF(r){
 function renderRecuHTML(r,cfg){
   var montant=parseFloat(r.montant_especes)||0;
   var dateFR=formatDateFR(String(r.date_bl||''));
+  var dateAff=dateFR||fmtDate(new Date());
+  var logoG=cfg.logoG||'';
+  var logoD=cfg.logoD||'';
+  var nom=cfg.nom||'Multi Auto Center';
+  var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');
+  var contact=(cfg.tel||'')+(cfg.email?' • '+cfg.email:'');
+
+  var html='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:700px;margin:0 auto;font-size:13px;color:#1A1A1A">';
+
+  // EN-TÊTE
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:4px solid #E8501A">';
+  html+=(logoG?'<img src="'+logoG+'" style="max-width:120px;max-height:85px;object-fit:contain" alt="">':'<div style="width:120px"></div>');
+  html+='<div style="text-align:center;flex:1;padding:0 20px">';
+  html+='<div style="font-size:11px;font-weight:700;color:#718096;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">RECU DE PAIEMENT — N°</div>';
+  html+='<div style="font-size:32px;font-weight:900;color:#E8501A;font-family:monospace;letter-spacing:3px">'+r.recu_num+'</div>';
+  html+='</div>';
+  html+=(logoD?'<img src="'+logoD+'" style="max-width:160px;max-height:85px;object-fit:contain" alt="">':'<div style="width:160px"></div>');
+  html+='</div>';
+
+  // DATE + BL
+  html+='<div style="display:flex;justify-content:space-between;padding:8px 20px;background:#F8F9FA;font-size:12px;border-bottom:1px solid #E9ECEF">';
+  html+='<div><span style="font-weight:700;color:#718096;font-size:10px;text-transform:uppercase;letter-spacing:1px">Date : </span><span style="font-weight:600">'+dateAff+'</span></div>';
+  html+='<div><span style="font-weight:700;color:#718096;font-size:10px;text-transform:uppercase;letter-spacing:1px">Bon de livraison : </span><span style="font-family:monospace;font-weight:700">'+r.bon_num+'</span></div>';
+  html+='</div>';
+
+  // CLIENT
+  html+='<div style="padding:14px 20px;border-bottom:1px solid #F0F0F0">';
+  html+='<div style="display:flex;align-items:baseline;margin-bottom:8px">';
+  html+='<span style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:130px;flex-shrink:0">Reçu de :</span>';
+  html+='<span style="font-size:16px;font-weight:900">'+r.nom_client+'</span>';
+  html+='</div>';
+  html+='<div style="display:flex;align-items:baseline">';
+  html+='<span style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:130px;flex-shrink:0">Téléphone :</span>';
+  html+='<span>'+(r.tel_client||'—')+'</span>';
+  html+='</div></div>';
+
+  // MONTANT
+  html+='<div style="margin:16px 20px;background:#FFF8E1;border:2px solid #D4A800;border-radius:10px;padding:20px;text-align:center">';
+  html+='<div style="font-size:10px;font-weight:700;color:#7A5C00;text-transform:uppercase;letter-spacing:3px;margin-bottom:8px">MONTANT RECU EN ESPECES</div>';
+  html+='<div style="font-size:40px;font-weight:900;color:#2D3748;margin-bottom:6px">'+montant.toFixed(2)+' €</div>';
+  html+='<div style="font-size:12px;color:#7A5C00;font-style:italic">Soit : '+montantEnLettres(montant)+'</div>';
+  html+='</div>';
+
+  // PRESTATION
+  html+='<div style="padding:0 20px 16px">';
+  html+='<div style="display:flex;align-items:baseline;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+  html+='<span style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:160px;flex-shrink:0">Pour la prestation :</span>';
+  html+='<span>Transport / dépannage du véhicule <strong>'+r.marque+' '+r.modele+'</strong></span>';
+  html+='</div>';
+  html+='<div style="display:flex;align-items:baseline;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
+  html+='<span style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:160px;flex-shrink:0">Trajet :</span>';
+  html+='<span><strong>'+r.lieu_embarquement+'</strong> → <strong>'+r.destination+'</strong></span>';
+  html+='</div>';
+  html+='<div style="display:flex;align-items:baseline">';
+  html+='<span style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:160px;flex-shrink:0">Encaissé par :</span>';
+  html+='<span style="font-weight:700">'+r.chauffeur_nom+'</span>';
+  html+='</div></div>';
+
+  // CACHET PAYÉ + FILIGRANE KAB
+  html+='<div style="position:relative;padding:10px 20px 20px;min-height:150px;display:flex;align-items:center;justify-content:flex-end">';
+  html+='<div style="position:absolute;top:50%;left:40%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Georgia,serif;font-style:italic;font-size:90px;font-weight:900;color:rgba(59,159,212,0.07);pointer-events:none;white-space:nowrap;user-select:none">KAB</div>';
+  html+='<div style="position:relative;z-index:1;width:150px;height:90px;border:5px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.95);margin-right:20px">';
+  html+='<div style="font-size:22px;font-weight:900;color:#1565C0;line-height:1.1;text-align:center;letter-spacing:3px">P A Y É</div>';
+  html+='<div style="font-size:11px;font-weight:700;color:#1565C0;margin-top:4px;text-align:center">le '+dateAff+'</div>';
+  html+='</div></div>';
+
+  // PIED DE PAGE + SIGLE KAB
+  html+='<div style="border-top:3px solid #E8501A;padding:12px 20px;display:flex;justify-content:space-between;align-items:center">';
+  html+='<div style="text-align:center;flex:1">';
+  html+='<div style="font-size:13px;font-weight:900;color:#2D3748">'+nom+'</div>';
+  html+='<div style="font-size:11px;color:#718096;margin-top:2px">'+adresse+(contact?' • '+contact:'')+'</div>';
+  html+='<div style="font-size:10px;color:#AAA;margin-top:2px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>';
+  html+='</div>';
+  html+='<div style="font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:22px;color:#3B9FD4;letter-spacing:2px;padding-left:20px;white-space:nowrap">Auteur : KAB</div>';
+  html+='</div>';
+
+  html+='</div>';
+  return html;
+}
+
+
+function genRecuPDF(r){
+  currentPDFData={type:'recu',data:r};
+  var cont=G('modal-pdf-content');
+  var cfg=getConfig();
+  cont.innerHTML=renderRecuHTML(r,cfg);
+  G('modal-pdf-title').textContent='Reçu — '+r.recu_num;
+  openModal('modal-pdf');
+}
+
+function renderRecuHTML(r,cfg){
+  var montant=parseFloat(r.montant_especes)||0;
+  var dateFR=formatDateFR(String(r.date_bl||''));
   var logoG=cfg.logoG||''; var logoD=cfg.logoD||'';
   var nom=cfg.nom||'Multi Auto Center';
   var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');
@@ -3171,7 +3323,7 @@ function renderRecuHTML(r,cfg){
     +'<div style="position:absolute;top:50%;left:35%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Georgia,serif;font-style:italic;font-size:100px;font-weight:900;color:rgba(59,159,212,0.08);pointer-events:none;white-space:nowrap;user-select:none;letter-spacing:4px">KAB</div>'
     +'<div style="position:relative;z-index:1;width:155px;height:95px;border:5px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.95);margin-right:20px">'
     +'<div style="font-size:24px;font-weight:900;color:#1565C0;line-height:1.1;text-align:center;letter-spacing:3px">P A Y É</div>'
-    +'<div style="font-size:11px;font-weight:700;color:#1565C0;margin-top:5px;text-align:center">le '+dateFR+'</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#1565C0;margin-top:5px;text-align:center">le '+(dateFR||fmtDate(new Date()))+'</div>'
     +'</div>'
     +'</div>'
 
@@ -3183,6 +3335,14 @@ function renderRecuHTML(r,cfg){
     +'<div style="font-size:10px;color:#AAA;margin-top:2px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>'
     +'</div>'
     +'<div style="font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:22px;color:#3B9FD4;letter-spacing:2px;text-align:right;padding-left:20px;white-space:nowrap;text-shadow:1px 1px 2px rgba(59,159,212,0.2)">Auteur : KAB</div>'
+    +'</div>'
+    +'<div style="border-top:3px solid #E8501A;padding:12px 20px;display:flex;justify-content:space-between;align-items:center">'
+    +'<div style="text-align:center;flex:1">'
+    +'<div style="font-size:13px;font-weight:900;color:#2D3748">'+nom+'</div>'
+    +'<div style="font-size:11px;color:#718096;margin-top:2px">'+adresse+(contact?' &bull; '+contact:'')+'</div>'
+    +'<div style="font-size:10px;color:#AAA;margin-top:2px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>'
+    +'</div>'
+    +'<div style="font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:22px;color:#3B9FD4;letter-spacing:2px;padding-left:20px;white-space:nowrap">Auteur : KAB</div>'
     +'</div>'
     +'</div>';
 }
@@ -3266,7 +3426,7 @@ function renderRecuHTML(r,cfg){
     // Cachet PAYÉ ovale bleu - bien centré
     +'<div style="position:relative;z-index:1;width:155px;height:95px;border:5px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.92);margin-right:30px">'
     +'<div style="font-size:24px;font-weight:900;color:#1565C0;line-height:1.1;text-align:center;letter-spacing:2px">P A Y É</div>'
-    +'<div style="font-size:11px;font-weight:700;color:#1565C0;margin-top:5px;text-align:center">le '+dateFR+'</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#1565C0;margin-top:5px;text-align:center">le '+(dateFR||fmtDate(new Date()))+'</div>'
     +'</div>'
     +'</div>'
 
@@ -3275,6 +3435,14 @@ function renderRecuHTML(r,cfg){
     +'<div style="font-size:13px;font-weight:900;color:#2D3748;margin-bottom:3px">'+nom+'</div>'
     +'<div style="font-size:11px;color:#718096">'+adresse+(contact?' • '+contact:'')+'</div>'
     +'<div style="font-size:10px;color:#AAA;margin-top:3px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>'
+    +'</div>'
+    +'<div style="border-top:3px solid #E8501A;padding:12px 20px;display:flex;justify-content:space-between;align-items:center">'
+    +'<div style="text-align:center;flex:1">'
+    +'<div style="font-size:13px;font-weight:900;color:#2D3748">'+nom+'</div>'
+    +'<div style="font-size:11px;color:#718096;margin-top:2px">'+adresse+(contact?' &bull; '+contact:'')+'</div>'
+    +'<div style="font-size:10px;color:#AAA;margin-top:2px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>'
+    +'</div>'
+    +'<div style="font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:22px;color:#3B9FD4;letter-spacing:2px;padding-left:20px;white-space:nowrap">Auteur : KAB</div>'
     +'</div>'
     +'</div>';
 }

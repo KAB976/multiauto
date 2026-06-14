@@ -1992,28 +1992,50 @@ window.addEventListener('load', function(){
 });
 
 function captureGPS(cb){
-  if(!navigator.geolocation){cb({lat:'',lng:'',lieu:''});return}
+  if(!navigator.geolocation){
+    console.log('Géolocalisation non disponible');
+    cb({lat:'',lng:'',lieu:''});
+    return;
+  }
   navigator.geolocation.getCurrentPosition(
     function(pos){
       var lat=pos.coords.latitude.toFixed(6);
       var lng=pos.coords.longitude.toFixed(6);
-      reverseGeocode(lat,lng,function(lieu){cb({lat:lat,lng:lng,lieu:lieu})});
+      console.log('GPS capturé:',lat,lng);
+      reverseGeocode(lat,lng,function(lieu){
+        console.log('Ville:',lieu);
+        cb({lat:lat,lng:lng,lieu:lieu});
+      });
     },
-    function(){cb({lat:'',lng:'',lieu:''})},
-    {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+    function(err){
+      console.log('Erreur GPS:',err.code,err.message);
+      cb({lat:'',lng:'',lieu:''});
+    },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
   );
 }
 
 function reverseGeocode(lat,lng,cb){
-  var url='https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lng+'&zoom=10&addressdetails=1';
-  fetch(url,{headers:{'Accept-Language':'fr'}})
+  // Essayer BigDataCloud (gratuit, sans CORS)
+  var url='https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+lat+'&longitude='+lng+'&localityLanguage=fr';
+  fetch(url)
     .then(function(r){return r.json()})
     .then(function(d){
-      var a=d.address||{};
-      var ville=a.city||a.town||a.village||a.municipality||a.county||d.display_name||lat+','+lng;
+      var ville=d.city||d.locality||d.principalSubdivision||d.countryName||lat+','+lng;
       cb(ville);
     })
-    .catch(function(){cb(lat+','+lng)});
+    .catch(function(){
+      // Fallback: Nominatim
+      var url2='https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lng+'&zoom=10&addressdetails=1';
+      fetch(url2,{headers:{'Accept-Language':'fr','User-Agent':'MultiAutoApp/1.0'}})
+        .then(function(r){return r.json()})
+        .then(function(d){
+          var a=d.address||{};
+          var ville=a.city||a.town||a.village||a.municipality||a.county||lat+','+lng;
+          cb(ville);
+        })
+        .catch(function(){cb(lat+','+lng);});
+    });
 }
 
 // ══════════════════════════════════════════════════════════

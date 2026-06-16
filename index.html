@@ -3270,34 +3270,40 @@ function ouvrirDocumentPrint(html,nom){
     +'body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#fff}'
     +'@page{margin:8mm;size:A4 portrait}'
     +'@media print{.no-print{display:none!important}body{margin:0;padding:0}}'
-    +'.no-print{background:#2D3748;padding:8px 16px;display:flex;align-items:center;gap:8px}'
+    +'.no-print{background:#2D3748;padding:8px 16px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:99}'
     +'.no-print button{padding:8px 16px;border:none;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer}'
     +'.btn-p{background:#C0392B;color:#fff}'
     +'.btn-f{background:#718096;color:#fff}'
     +'.no-print span{color:#fff;font-size:12px;flex:1}'
     +'img{max-width:100%!important;image-orientation:from-image!important}'
-    +'</style></head><body>'
+    +'</style>'
+    +'<script>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script>'
+    +'</head><body>'
     +'<div class="no-print">'
-    +'<button class="btn-p" onclick="window.print()">🖨️ Imprimer / Enregistrer PDF</button>'
+    +'<button class="btn-p" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>'
     +'<span>'+nomEntreprise+' — '+nom+'</span>'
     +'<button class="btn-f" onclick="window.close()">✕ Fermer</button>'
     +'</div>'
     +html
     +'</body></html>';
+  // Utiliser blob URL pour éviter les problèmes de popup
   var blob=new Blob([fullHtml],{type:'text/html;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var win=window.open(url,'_blank');
   if(win){
-    setTimeout(function(){URL.revokeObjectURL(url);},60000);
+    setTimeout(function(){URL.revokeObjectURL(url);},120000);
   } else {
-    // Fallback: télécharger directement
+    // Popup bloqué - télécharger le fichier HTML
     var a=document.createElement('a');
     a.href=url;
     a.download=nom+'.html';
     document.body.appendChild(a);
     a.click();
-    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
-    showToast('Ouvrez le fichier téléchargé dans Chrome puis imprimez');
+    setTimeout(function(){
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },2000);
+    showToast('Fichier téléchargé — Ouvrez-le dans Chrome pour imprimer en PDF');
   }
 }
 
@@ -3502,6 +3508,10 @@ function renderRecuHTML(r,cfg){
   var montant=parseFloat(r.montant_especes)||0;
   var dateFR=formatDateFR(String(r.date_bl||''));
   var dateAff=dateFR||fmtDate(new Date());
+  // Signature
+  var sigSrc='';
+  if(r.signature&&String(r.signature).length>10) sigSrc=r.signature;
+  else if(r.signature_url&&String(r.signature_url).length>10) sigSrc=r.signature_url;
   var logoG=cfg.logoG||''; var logoD=cfg.logoD||'';
   var nom=cfg.nom||'Multi Auto Center';
   var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');

@@ -3206,7 +3206,7 @@ function voirBL(b){
 }
 
 function renderBLHTML(b,cfg){
-  var tnBadge=b.tn_tw?'<span style="background:'+(b.tn_tw==='TW'?'#2563EB':'#C0392B')+';color:#fff;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:900;margin-left:8px">'+b.tn_tw+'</span>':'';
+  var tnBadge=b.tn_tw?'<span style="background:'+(b.tn_tw==='TW'?'#2563EB':'#C0392B')+';color:#fff;border-radius:5px;padding:2px 10px;font-size:12px;font-weight:900;letter-spacing:1px">'+b.tn_tw+'</span>':'';
   var photoSrc='';
   if(b.photo_vehicule&&b.photo_vehicule.length>10) photoSrc=b.photo_vehicule;
   else if(b.photo_url&&b.photo_url.length>10) photoSrc=b.photo_url;
@@ -3220,86 +3220,118 @@ function renderBLHTML(b,cfg){
   var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');
   var contact=(cfg.tel||'')+(cfg.email?' • '+cfg.email:'');
 
-  var h='';
-  h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:800px;margin:0 auto;font-size:11px;color:#1A1A1A;display:flex;flex-direction:column;min-height:277mm">';
+  var PRINT='@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}@page{margin:8mm;size:A4 portrait}}';
 
-  // EN-TÊTE
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 16px;border-bottom:4px solid #E8501A">';
-  h+=(logoG?'<img src="'+logoG+'" style="max-width:120px;max-height:80px;object-fit:contain" alt="">':'<div style="width:120px"></div>');
-  h+='<div style="text-align:center;flex:1;padding:0 16px">';
-  h+='<div style="font-size:11px;font-weight:700;color:#718096;letter-spacing:3px;text-transform:uppercase;margin-bottom:2px">BON DE LIVRAISON — N°</div>';
-  h+='<div style="font-size:22px;font-weight:900;color:#2D3748;font-family:monospace;letter-spacing:3px">'+b.bon_num+'</div>';
+  var h='<style>'+PRINT+'</style>';
+  h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:794px;margin:0 auto;display:flex;flex-direction:column;min-height:277mm">';
+
+  // EN-TÊTE ROUGE
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;display:flex;align-items:center;min-height:145px;padding:10px 14px;gap:12px;flex-shrink:0">';
+  // Logo gauche - photo remplit tout le cadre
+  h+='<div style="background:#C0392B;border-radius:8px;width:165px;height:125px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">';
+  h+=(logoG?'<img src="'+logoG+'" style="width:165px;height:125px;object-fit:cover;border-radius:8px" alt="">':'<div style="color:rgba(255,255,255,.4);font-size:11px;text-align:center">Logo<br>gauche</div>');
   h+='</div>';
-  h+=(logoD?'<img src="'+logoD+'" style="max-width:150px;max-height:80px;object-fit:contain" alt="">':'<div style="width:150px"></div>');
+  // Centre
+  h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">';
+  h+='<div style="font-size:34px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:3px;text-align:center;text-shadow:1px 2px 5px rgba(0,0,0,.3)">BON DE LIVRAISON</div>';
+  h+='<div style="background:rgba(0,0,0,.35);border-radius:8px;padding:5px 24px"><div style="font-size:18px;font-weight:900;color:#fff;font-family:monospace;letter-spacing:3px;text-align:center">'+b.bon_num+'</div></div>';
+  h+='</div>';
+  // Logo droit - cadre ajusté à la taille du logo
+  h+='<div style="display:flex;align-items:center;justify-content:center;width:155px;flex-shrink:0">';
+  h+=(logoD?'<div style="background:#fff;border-radius:10px;padding:8px 10px;display:inline-flex;align-items:center;justify-content:center"><img src="'+logoD+'" style="max-width:135px;max-height:75px;object-fit:contain;display:block" alt=""></div>':'<div style="color:rgba(255,255,255,.4);font-size:11px;text-align:center">Logo<br>droit</div>');
+  h+='</div>';
   h+='</div>';
 
-  // BANDE DATE
-  h+='<div style="background:#2D3748;color:#fff;padding:6px 16px;display:flex;justify-content:space-between;align-items:center">';
-  h+='<div style="font-size:13px;font-weight:700">Date : '+dateFR+' — '+heureAff+tnBadge+'</div>';
-  h+='<div style="font-size:13px;font-weight:700">Chauffeur : '+b.chauffeur_nom+(b.chauffeur_camion?' — '+b.chauffeur_camion:'')+'</div>';
+  // BANDE DATE - fond noir
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#1A1A1A;padding:8px 18px;display:flex;align-items:center;gap:18px;font-size:12px;flex-shrink:0">';
+  h+='<span style="color:#fff">Date : <strong style="color:#fff">'+dateFR+'</strong></span>';
+  h+='<span style="color:#fff">Heure : <strong style="color:#fff">'+heureAff+'</strong></span>';
+  if(b.tn_tw) h+='<span style="color:#fff">Tarif : '+tnBadge+'</span>';
+  h+='<span style="color:#fff">Chauffeur : <strong style="color:#fff">'+b.chauffeur_nom+'</strong></span>';
+  if(b.chauffeur_camion) h+='<span style="color:#fff">Camion : <strong style="color:#fff">'+b.chauffeur_camion+'</strong></span>';
+  h+='<span style="margin-left:auto;font-weight:900;color:#fff;font-size:11px;letter-spacing:2px;border:1.5px solid #fff;padding:2px 8px;border-radius:3px">ORIGINAL</span>';
   h+='</div>';
 
-  // CORPS - flex:1 pour pousser pied de page en bas
-  h+='<div style="flex:1;padding:5px 16px">';
+  // CORPS
+  h+='<div style="flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:11px;position:relative;overflow:hidden">';
+  // Filigrane KAB
+  h+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Comic Sans MS,cursive;font-size:160px;font-weight:900;color:rgba(192,57,43,0.06);pointer-events:none;white-space:nowrap;user-select:none;z-index:0">KAB</div>';
 
   // VÉHICULE/CLIENT
-  h+='<div style="background:#E8501A;color:#fff;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;border-radius:3px">VÉHICULE / CLIENT</div>';
-  h+='<div style="display:flex;align-items:center;margin-bottom:2px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
-  h+='<span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:150px;flex-shrink:0">Immatriculation</span>';
-  h+='<span style="font-family:monospace;font-size:13px;font-weight:900;letter-spacing:3px;color:#1A1A1A;background:#F5F5F5;border:1.5px solid #CCC;border-radius:4px;padding:3px 10px">'+b.immatriculation+'</span>';
+  h+='<div style="position:relative;z-index:1">';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:5px;margin-bottom:8px">🚗 Véhicule / Client</div>';
+  h+='<div style="display:flex;border-bottom:1px solid #EBEBEB;padding:7px 4px;align-items:center">';
+  h+='<div style="flex:1;display:flex;gap:10px;align-items:center"><span style="font-size:11px;color:#666;text-transform:uppercase;min-width:110px;flex-shrink:0">Immatriculation</span><span style="font-family:monospace;font-size:14px;font-weight:900;letter-spacing:3px;background:#f5f5f5;border:1.5px solid #ccc;border-radius:4px;padding:2px 8px">'+b.immatriculation+'</span></div>';
+  h+='<div style="flex:1;display:flex;gap:10px;align-items:center"><span style="font-size:11px;color:#666;text-transform:uppercase;min-width:80px;flex-shrink:0">Marque</span><span style="font-size:13px;font-weight:700">'+b.marque+'</span></div>';
+  h+='<div style="flex:1;display:flex;gap:10px;align-items:center"><span style="font-size:11px;color:#666;text-transform:uppercase;min-width:70px;flex-shrink:0">Modèle</span><span style="font-size:13px;font-weight:700">'+b.modele+'</span></div>';
   h+='</div>';
-  h+='<div style="display:flex;margin-bottom:2px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
-  h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:80px;flex-shrink:0">Marque</span><span style="font-weight:600">'+b.marque+'</span></div>';
-  h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:80px;flex-shrink:0">Modèle</span><span style="font-weight:600">'+b.modele+'</span></div>';
+  h+='<div style="display:flex;border-bottom:1px solid #EBEBEB;padding:7px 4px;align-items:center">';
+  h+='<div style="flex:1;display:flex;gap:10px;align-items:center"><span style="font-size:11px;color:#666;text-transform:uppercase;min-width:110px;flex-shrink:0">Nom du client</span><span style="font-size:14px;font-weight:700">'+b.nom_client+'</span></div>';
+  h+='<div style="flex:1;display:flex;gap:10px;align-items:center"><span style="font-size:11px;color:#666;text-transform:uppercase;min-width:90px;flex-shrink:0">Téléphone</span><span style="font-size:13px;font-weight:700">'+(b.tel_client||'—')+'</span></div>';
   h+='</div>';
-  h+='<div style="display:flex;margin-bottom:2px">';
-  h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:110px;flex-shrink:0">Nom du client</span><span style="font-weight:700;font-size:11px">'+b.nom_client+'</span></div>';
-  h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:110px;flex-shrink:0">N° Téléphone</span><span>'+(b.tel_client||'—')+'</span></div>';
   h+='</div>';
 
   // TRAJET
-  h+='<div style="background:#E8501A;color:#fff;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;border-radius:3px">TRAJET</div>';
-  h+='<div style="display:flex;margin-bottom:2px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
-  h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">Embarquement</span><span style="font-weight:700">'+b.lieu_embarquement+'</span></div>';
-  h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:100px;flex-shrink:0">Destination</span><span style="font-weight:700">'+b.destination+'</span></div>';
-  h+='</div>';
-  h+='<div style="display:flex;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">Observations</span><span>'+(b.observations||'—')+'</span></div>';
+  h+='<div style="position:relative;z-index:1">';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:5px;margin-bottom:8px">📍 Trajet</div>';
+  h+='<div style="display:flex;gap:14px;align-items:center">';
+  h+='<div style="flex:1;border:1px solid #E0E0E0;border-radius:8px;padding:10px 14px;background:#FAFAFA"><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Embarquement</div><div style="font-size:15px;font-weight:900">'+b.lieu_embarquement+'</div></div>';
+  h+='<div style="font-size:24px;color:#C0392B;flex-shrink:0">→</div>';
+  h+='<div style="flex:1;border:1px solid #E0E0E0;border-radius:8px;padding:10px 14px;background:#FAFAFA"><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Destination</div><div style="font-size:15px;font-weight:900">'+b.destination+'</div></div>';
+  h+='</div></div>';
 
   // PAIEMENT
   if(b.montant_especes){
-    h+='<div style="background:#E8501A;color:#fff;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;border-radius:3px">PAIEMENT</div>';
-    h+='<div style="display:flex;margin-bottom:2px;padding-bottom:8px;border-bottom:1px solid #F0F0F0">';
-    h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">Mode</span><span>Espèces</span></div>';
-    h+='<div style="flex:1;display:flex"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:100px;flex-shrink:0">Montant</span><span style="font-weight:900;font-size:12px;color:#E8501A">'+parseFloat(b.montant_especes).toFixed(2)+' €</span></div>';
+    h+='<div style="position:relative;z-index:1">';
+    h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:5px;margin-bottom:8px">💵 Paiement</div>';
+    h+='<div style="display:flex;border-bottom:1px solid #EBEBEB;padding:7px 4px">';
+    h+='<div style="flex:1;display:flex;gap:10px"><span style="font-size:11px;color:#666;text-transform:uppercase;min-width:110px;flex-shrink:0">Mode</span><span style="font-size:13px;font-weight:700">Espèces</span></div>';
+    h+='<div style="flex:1;display:flex;gap:10px"><span style="font-size:11px;color:#666;text-transform:uppercase;min-width:80px;flex-shrink:0">Montant</span><span style="font-size:15px;font-weight:900;color:#C0392B">'+parseFloat(b.montant_especes).toFixed(2)+' €</span></div>';
+    h+='<div style="flex:1;display:flex;gap:10px"><span style="font-size:11px;color:#666;text-transform:uppercase;min-width:80px;flex-shrink:0">N° Reçu</span><span style="font-family:monospace;font-weight:900;color:#2563EB;font-size:13px">'+b.recu_num+'</span></div>';
+    h+='</div></div>';
+  }
+
+  // OBSERVATIONS
+  if(b.observations){
+    h+='<div style="position:relative;z-index:1">';
+    h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:5px;margin-bottom:8px">📝 Observations</div>';
+    h+='<div style="padding:8px 4px;font-size:13px;color:#555">'+b.observations+'</div>';
     h+='</div>';
-    h+='<div style="display:flex;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;width:120px;flex-shrink:0">N° Reçu</span><span style="font-family:monospace;font-weight:700;color:#E8501A">'+b.recu_num+'</span></div>';
   }
 
   // PHOTO + SIGNATURE
-  h+='<div style="background:#E8501A;color:#fff;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;border-radius:3px">PHOTO DU VÉHICULE / SIGNATURE DU CLIENT</div>';
-  h+='<div style="display:flex;gap:14px;margin-bottom:8px">';
-  h+='<div style="flex:1;min-height:100px;background:#FAFAFA;border:1px solid #E9ECEF;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px">';
-  h+=(photoSrc?'<img src="'+photoSrc+'" style="max-width:100%;max-height:100px;object-fit:contain;border-radius:4px;image-orientation:from-image" alt="Photo">':'<div style="text-align:center;color:#CCC"><div style="font-size:28px">📷</div><div style="font-size:11px;margin-top:4px">Aucune photo</div></div>');
+  h+='<div style="position:relative;z-index:1;display:flex;gap:14px;flex:1">';
+  h+='<div style="flex:1;border:1px solid #E0E0E0;border-radius:8px;overflow:hidden;display:flex;flex-direction:column">';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">📷 Photo du véhicule</div>';
+  h+=(photoSrc
+    ?'<div style="flex:1;display:flex;align-items:center;justify-content:center;background:#FAFAFA;padding:6px"><img src="'+photoSrc+'" style="max-width:100%;max-height:160px;object-fit:contain;border-radius:6px;image-orientation:from-image" alt="Photo"></div>'
+    :'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FAFAFA;color:#CCC;gap:6px;min-height:130px"><div style="font-size:32px">📷</div><div style="font-size:11px">Aucune photo</div></div>');
   h+='</div>';
-  h+='<div style="flex:1;min-height:100px;background:#FAFAFA;border:1px solid #E9ECEF;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:6px">';
-  h+=(sigSrc?'<img src="'+sigSrc+'" style="max-width:100%;max-height:100px;object-fit:contain" alt="Signature">':'<div style="text-align:center;color:#CCC"><div style="font-size:28px">✍️</div><div style="font-size:11px;margin-top:4px">Aucune signature</div></div>');
+  // Signature réduite
+  h+='<div style="width:190px;flex-shrink:0;border:1px solid #E0E0E0;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;align-self:flex-start">';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">✍️ Signature</div>';
+  h+=(sigSrc
+    ?'<div style="height:80px;display:flex;align-items:center;justify-content:center;background:#FAFAFA;padding:4px"><img src="'+sigSrc+'" style="max-width:100%;max-height:72px;object-fit:contain" alt="Signature"></div>'
+    :'<div style="height:80px;display:flex;align-items:center;justify-content:center;background:#FAFAFA;color:#CCC;font-size:11px">Aucune signature</div>');
   h+='</div>';
   h+='</div>';
+
   h+='</div>'; // fin corps
 
-  // PIED DE PAGE - toujours en bas
-  h+='<div style="border-top:3px solid #E8501A;padding:6px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:auto" class="pdf-footer">';
-  h+='<div style="text-align:center;flex:1">';
-  h+='<div style="font-size:12px;font-weight:900;color:#2D3748">'+nom+'</div>';
-  h+='<div style="font-size:10px;color:#718096;margin-top:2px">'+adresse+(contact?' • '+contact:'')+'</div>';
-  h+='<div style="font-size:9px;color:#AAA;margin-top:1px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>';
+  // PIED DE PAGE
+  h+='<div style="border-top:2px solid #C0392B;padding:10px 18px;display:flex;align-items:center;flex-shrink:0">';
+  h+='<div style="flex:1;text-align:center">';
+  h+='<div style="font-size:13px;font-weight:900;color:#1A1A1A">'+nom+'</div>';
+  h+='<div style="font-size:10px;color:#D4A800;margin-top:2px">'+adresse+(contact?' &bull; '+contact:'')+'</div>';
   h+='</div>';
-  h+='<div style="font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:13px;color:#3B9FD4;padding-left:14px;white-space:nowrap">Auteur : KAB</div>';
+  h+='<div style="font-family:Palatino Linotype,Georgia,serif;font-style:italic;font-weight:900;font-size:20px;color:#2563EB;letter-spacing:3px;padding-left:16px;white-space:nowrap">✦ KAB ✦</div>';
   h+='</div>';
 
   h+='</div>';
   return h;
 }
+
+
 
 
 
@@ -3331,81 +3363,96 @@ function renderRecuHTML(r,cfg){
   var adresse=(cfg.adr||'')+(cfg.ville?' — '+cfg.ville:'');
   var contact=(cfg.tel||'')+(cfg.email?' • '+cfg.email:'');
 
-  var h='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:700px;margin:0 auto;font-size:11px;color:#1A1A1A">';
+  var PRINT='@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}@page{margin:8mm;size:A4 portrait}}';
 
-  // EN-TÊTE
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:3px solid #E8501A">';
-  h+=(logoG?'<img src="'+logoG+'" style="max-width:80px;max-height:55px;object-fit:contain" alt="">':'<div style="width:80px"></div>');
-  h+='<div style="text-align:center;flex:1;padding:0 12px">';
-  h+='<div style="font-size:9px;font-weight:700;color:#718096;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">REÇU DE PAIEMENT — N°</div>';
-  h+='<div style="font-size:18px;font-weight:900;color:#E8501A;font-family:monospace;letter-spacing:2px">'+r.recu_num+'</div>';
+  var h='<style>'+PRINT+'</style>';
+  h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:794px;margin:0 auto;display:flex;flex-direction:column;min-height:277mm">';
+
+  // EN-TÊTE ROUGE
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;display:flex;align-items:center;min-height:145px;padding:10px 14px;gap:12px;flex-shrink:0">';
+  h+='<div style="background:#C0392B;border-radius:8px;width:165px;height:125px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">';
+  h+=(logoG?'<img src="'+logoG+'" style="width:165px;height:125px;object-fit:cover;border-radius:8px" alt="">':'<div style="color:rgba(255,255,255,.4);font-size:11px;text-align:center">Logo<br>gauche</div>');
   h+='</div>';
-  h+=(logoD?'<img src="'+logoD+'" style="max-width:120px;max-height:55px;object-fit:contain" alt="">':'<div style="width:120px"></div>');
+  h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">';
+  h+='<div style="font-size:34px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:3px;text-align:center;text-shadow:1px 2px 5px rgba(0,0,0,.3)">REÇU DE PAIEMENT</div>';
+  h+='<div style="background:rgba(0,0,0,.35);border-radius:8px;padding:5px 24px"><div style="font-size:18px;font-weight:900;color:#fff;font-family:monospace;letter-spacing:3px;text-align:center">'+r.recu_num+'</div></div>';
+  h+='</div>';
+  h+='<div style="display:flex;align-items:center;justify-content:center;width:155px;flex-shrink:0">';
+  h+=(logoD?'<div style="background:#fff;border-radius:10px;padding:8px 10px;display:inline-flex;align-items:center;justify-content:center"><img src="'+logoD+'" style="max-width:135px;max-height:75px;object-fit:contain;display:block" alt=""></div>':'<div style="color:rgba(255,255,255,.4);font-size:11px;text-align:center">Logo<br>droit</div>');
+  h+='</div>';
   h+='</div>';
 
-  // DATE + BL
-  h+='<div style="display:flex;justify-content:space-between;padding:4px 16px;background:#F8F9FA;font-size:10px;border-bottom:1px solid #E9ECEF">';
-  h+='<div><span style="font-weight:700;color:#718096;text-transform:uppercase;font-size:9px">Date : </span><span style="font-weight:600">'+dateAff+'</span></div>';
-  h+='<div><span style="font-weight:700;color:#718096;text-transform:uppercase;font-size:9px">Bon de livraison : </span><span style="font-family:monospace;font-weight:700">'+r.bon_num+'</span></div>';
+  // DATE BAR - fond noir
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#1A1A1A;padding:8px 18px;display:flex;align-items:center;flex-shrink:0">';
+  h+='<span style="color:#fff;font-size:12px">Date : <strong style="color:#fff">'+dateAff+'</strong></span>';
+  h+='<span style="margin-left:auto;font-weight:900;color:#fff;font-size:11px;letter-spacing:2px;border:1.5px solid #fff;padding:2px 8px;border-radius:3px">ORIGINAL</span>';
   h+='</div>';
 
-  // CLIENT
-  h+='<div style="padding:6px 16px;border-bottom:1px solid #F0F0F0">';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:3px">';
-  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:110px;flex-shrink:0">Reçu de :</span>';
-  h+='<span style="font-size:13px;font-weight:900">'+r.nom_client+'</span>';
-  h+='</div>';
-  h+='<div style="display:flex;align-items:baseline">';
-  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:1px;width:110px;flex-shrink:0">Téléphone :</span>';
-  h+='<span>'+(r.tel_client||'—')+'</span>';
-  h+='</div>';
-  h+='</div>';
+  // CORPS
+  h+='<div style="flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:11px;position:relative;overflow:hidden">';
+  h+='<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Comic Sans MS,cursive;font-size:160px;font-weight:900;color:rgba(192,57,43,0.06);pointer-events:none;white-space:nowrap;user-select:none;z-index:0">KAB</div>';
 
   // MONTANT
-  h+='<div style="margin:8px 16px;background:#FFF8E1;border:2px solid #D4A800;border-radius:8px;padding:10px;text-align:center">';
-  h+='<div style="font-size:9px;font-weight:700;color:#7A5C00;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px">MONTANT REÇU EN ESPÈCES</div>';
-  h+='<div style="font-size:24px;font-weight:900;color:#2D3748;margin-bottom:3px">'+montant.toFixed(2)+' €</div>';
-  h+='<div style="font-size:10px;color:#7A5C00;font-style:italic">Soit : '+montantEnLettres(montant)+'</div>';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#FFF8DC;border:2px solid #D4A800;border-radius:12px;padding:18px;text-align:center;position:relative;z-index:1">';
+  h+='<div style="font-size:11px;font-weight:700;color:#D4A800;text-transform:uppercase;letter-spacing:3px;margin-bottom:8px">Montant reçu en espèces</div>';
+  h+='<div style="font-size:48px;font-weight:900;color:#1A1A1A;line-height:1">'+montant.toFixed(2).replace('.',',')+' €</div>';
+  h+='<div style="font-size:13px;color:#D4A800;font-style:italic;margin-top:8px;border-top:1px solid #E8D88A;padding-top:8px">'+montantEnLettres(montant)+'</div>';
   h+='</div>';
 
-  // PRESTATION
-  h+='<div style="padding:4px 16px">';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:3px;padding-bottom:3px;border-bottom:1px solid #F0F0F0">';
-  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;width:140px;flex-shrink:0">Pour la prestation :</span>';
-  h+='<span>Transport / dépannage du véhicule <strong>'+r.marque+' '+r.modele+'</strong></span>';
+  // DÉTAILS
+  h+='<div style="position:relative;z-index:1">';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 14px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:5px;margin-bottom:8px">📋 Détails de la prestation</div>';
+  h+='<div style="display:grid;grid-template-columns:170px 1fr;gap:0">';
+  h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">Client :</div>';
+  h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px">'+r.nom_client+'</span><span style="font-size:11px;color:#888;font-weight:400">'+(r.tel_client||'')+'</span></div>';
+  h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">Véhicule :</div>';
+  h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB">'+r.marque+' '+r.modele+' — '+r.immatriculation+'</div>';
+  h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">Mission :</div>';
+  h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB">'+r.lieu_embarquement+' → '+r.destination+'</div>';
+  h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">N° Bon de livraison :</div>';
+  h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB;font-family:monospace;color:#2563EB">'+r.bon_num+'</div>';
+  h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">Chauffeur :</div>';
+  h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB">'+r.chauffeur_nom+'</div>';
+  h+='</div></div>';
+
+  // CONFIRMATION
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;border:2px solid #C0392B;border-radius:10px;background:#FFF0EE;padding:10px;text-align:center;position:relative;z-index:1">';
+  h+='<div style="font-size:13px;font-weight:900;color:#C0392B;letter-spacing:2px;text-transform:uppercase">✅ Paiement confirmé en espèces</div>';
   h+='</div>';
-  h+='<div style="display:flex;align-items:baseline;margin-bottom:3px;padding-bottom:3px;border-bottom:1px solid #F0F0F0">';
-  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;width:140px;flex-shrink:0">Trajet :</span>';
-  h+='<span><strong>'+r.lieu_embarquement+'</strong> → <strong>'+r.destination+'</strong></span>';
+
+  // SIGNATURE + CACHET (v6 - cachet intact avec juste la date superposée)
+  h+='<div style="display:flex;gap:0;align-items:center;position:relative;z-index:1;flex:1;padding:8px 0">';
+  h+='<div style="width:250px;flex-shrink:0;border:1px solid #E0E0E0;border-radius:8px;overflow:hidden;align-self:center">';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:5px 12px;font-size:11px;font-weight:700;text-transform:uppercase">✍️ Signature du client</div>';
+  h+='<div style="height:75px;display:flex;align-items:center;justify-content:center;background:#FAFAFA;color:#CCC;font-size:11px">Signature</div>';
   h+='</div>';
-  h+='<div style="display:flex;align-items:baseline">';
-  h+='<span style="font-size:9px;font-weight:700;color:#718096;text-transform:uppercase;width:140px;flex-shrink:0">Encaissé par :</span>';
-  h+='<span style="font-weight:700">'+r.chauffeur_nom+'</span>';
+  // Cachet v6 - ovale bleu avec MULTI/PAYÉ/AUTO/date
+  h+='<div style="flex:1;display:flex;align-items:center;justify-content:flex-end;padding-right:20px">';
+  h+='<div style="position:relative;width:160px;height:100px;transform:rotate(-8deg)">';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;width:160px;height:100px;border:5px double #1565C0;border-radius:50%;background:rgba(255,255,255,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">';
+  h+='<div style="font-size:12px;font-weight:900;color:#1565C0;letter-spacing:3px;text-transform:uppercase">MULTI AUTO</div>';
+  h+='<div style="font-size:26px;font-weight:900;color:#1565C0;line-height:1;letter-spacing:2px">PAYÉ</div>';
+  h+='<div style="font-size:12px;font-weight:700;color:#1565C0;letter-spacing:1px">'+dateAff+'</div>';
+  h+='</div></div>';
   h+='</div>';
   h+='</div>';
 
-  // CACHET PAYÉ + FILIGRANE KAB
-  h+='<div style="position:relative;height:110px;display:flex;align-items:center;justify-content:flex-end;padding-right:30px;overflow:hidden">';
-  h+='<div style="position:absolute;top:50%;left:38%;transform:translate(-50%,-50%) rotate(-35deg);font-family:Georgia,serif;font-style:italic;font-size:70px;font-weight:900;color:rgba(59,159,212,0.07);pointer-events:none;white-space:nowrap;user-select:none">KAB</div>';
-  h+='<div style="position:relative;z-index:1;width:115px;height:70px;border:4px solid #1565C0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-12deg);background:rgba(255,255,255,0.95)">';
-  h+='<div style="font-size:16px;font-weight:900;color:#1565C0;line-height:1.1;text-align:center;letter-spacing:2px">P A Y É</div>';
-  h+='<div style="font-size:9px;font-weight:700;color:#1565C0;margin-top:3px;text-align:center">le '+dateAff+'</div>';
-  h+='</div>';
-  h+='</div>';
+  h+='</div>'; // fin corps
 
   // PIED DE PAGE
-  h+='<div style="border-top:2px solid #E8501A;padding:6px 16px;display:flex;justify-content:space-between;align-items:center">';
-  h+='<div style="text-align:center;flex:1">';
-  h+='<div style="font-size:11px;font-weight:900;color:#2D3748">'+nom+'</div>';
-  h+='<div style="font-size:9px;color:#718096;margin-top:1px">'+adresse+(contact?' • '+contact:'')+'</div>';
-  h+='<div style="font-size:8px;color:#AAA;margin-top:1px;font-style:italic">Document généré le '+fmtDate(new Date())+'</div>';
+  h+='<div style="border-top:2px solid #C0392B;padding:10px 18px;display:flex;align-items:center;flex-shrink:0">';
+  h+='<div style="flex:1;text-align:center">';
+  h+='<div style="font-size:13px;font-weight:900;color:#1A1A1A">'+nom+'</div>';
+  h+='<div style="font-size:10px;color:#D4A800;margin-top:2px">'+adresse+(contact?' &bull; '+contact:'')+'</div>';
   h+='</div>';
-  h+='<div style="font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:12px;color:#3B9FD4;padding-left:12px;white-space:nowrap">Auteur : KAB</div>';
+  h+='<div style="font-family:Palatino Linotype,Georgia,serif;font-style:italic;font-weight:900;font-size:20px;color:#2563EB;letter-spacing:3px;padding-left:16px;white-space:nowrap">✦ KAB ✦</div>';
   h+='</div>';
 
   h+='</div>';
   return h;
 }
+
+
 
 
 

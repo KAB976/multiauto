@@ -657,7 +657,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <button class="btn btn-gy" onclick="toutCocher('sel-gps',this)">☑️ Tout cocher</button>
           <button class="btn btn-bl" onclick="imprimerSelectionGPS()">🖨️ Imprimer sélection</button>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th>N° BL</th><th>Date</th><th>Chauffeur</th><th>Embarquement</th><th>Destination</th><th>Durée trajet</th><th>Carte</th></tr></thead><tbody id="adm-gps-body"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer</td></tr></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-gps',this)"></th><th>N° BL</th><th>Date</th><th>Chauffeur</th><th>Embarquement</th><th>Destination</th><th>Durée trajet</th><th>Carte</th></tr></thead><tbody id="adm-gps-body"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer</td></tr></tbody></table></div>
       </div>
     </div>
 
@@ -1157,12 +1157,20 @@ function fmtRC(pref,n){return pref+'/R-'+fmtNum(n)}
 var gpsDataStore={};
 
 function toutCocherAll(cls,chk){
-  document.querySelectorAll('.'+cls).forEach(function(cb){cb.checked=chk.checked;});
+  // Chercher dans le tableau parent du checkbox header
+  var table=chk.closest('table');
+  if(table){
+    table.querySelectorAll('.'+cls).forEach(function(cb){cb.checked=chk.checked;});
+  } else {
+    document.querySelectorAll('.'+cls).forEach(function(cb){cb.checked=chk.checked;});
+  }
 }
 
 function toutCocher(cls,btn){
+  var all=document.querySelectorAll('.'+cls);
+  if(!all.length){showToast('Chargez les données d abord puis cochez');return;}
   var checked=document.querySelectorAll('.'+cls+':checked').length>0;
-  document.querySelectorAll('.'+cls).forEach(function(cb){cb.checked=!checked;});
+  all.forEach(function(cb){cb.checked=!checked;});
   btn.textContent=checked?'☑️ Tout cocher':'☐ Tout décocher';
 }
 
@@ -1956,7 +1964,7 @@ function entrerChauffeur(){
   initSig();
   resetFormChauffeur();
   heureDebut=new Date();
-  captureGPS(function(g){gpsEmb=g});
+  // GPS capturé au moment de 'Je pars'
 }
 
 function majBonNum(){
@@ -2132,14 +2140,26 @@ function reverseGeocode(lat,lng,cb){
 // ══════════════════════════════════════════════════════════
 function jePars(){
   var emb=G('inp-emb').value.trim();
-  if(!emb){showAlert('form-alert','Saisissez le lieu d\'embarquement');return}
+  if(!emb){showAlert('form-alert','Saisissez le lieu embarquement');return}
   estParti=true;
   heureDebut=new Date();
-  captureGPS(function(g){gpsEmb=g});
   G('btn-je-pars').style.display='none';
   G('zone-arrive').style.display='block';
   G('dest-locked-msg').style.display='none';
-  showToast('✅ Embarquement enregistré — Bon voyage !');
+  // Capturer GPS embarquement et remplir le champ si possible
+  loader(true,'GPS embarquement...');
+  captureGPS(function(g){
+    gpsEmb=g;
+    loader(false);
+    // Si GPS a trouvé une ville et champ embarquement vide, remplir
+    if(g.lieu && !G('inp-emb').value.trim()){
+      G('inp-emb').value=g.lieu;
+    } else if(g.lieu && G('inp-emb').value.trim()){
+      // Garder la saisie manuelle mais enrichir GPS avec la saisie
+      gpsEmb.lieu = G('inp-emb').value.trim();
+    }
+    showToast('✅ Embarquement GPS enregistré — Bon voyage !');
+  });
 }
 
 function confirmerArrivee(){
@@ -2836,12 +2856,12 @@ function admLoadGPS(){
     loader(false);
     var tb=G('adm-gps-body');
     if(err||!data){
-      tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--re)">Erreur de chargement</td></tr>';
+      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--re)">Erreur de chargement</td></tr>';
       return;
     }
     var gps=data.gps||[];
     if(!gps.length){
-      tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Aucune donnée GPS. Essayez sans filtres.</td></tr>';
+      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Aucune donnée GPS. Essayez sans filtres.</td></tr>';
       return;
     }
     gps=gps.slice().sort(function(a,b2){
@@ -2850,7 +2870,7 @@ function admLoadGPS(){
       if(da&&db) return db.getTime()-da.getTime();
       return 0;
     });
-    tb.innerHTML=gps.map(function(g){
+    tb.innerHTML=gps.map(function(g,i){
       var dateFR=formatDateFR(String(g.date_bl||''));
       var embVille=g.lieu_embarquement||'—';
       var destVille=g.destination||'—';

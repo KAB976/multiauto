@@ -1102,7 +1102,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx69CWF7PD1GLdoUWOUuo9el66GcCinjmH0ut3_6qt_1K7uzVHrNDs8twWg7VVcJoIDhg/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXRQIojG-mXjRbXxiIprZ2xGQ8Xtk-KmQtEiCwWUVALBaIuaTUcBFQXJI3n-5ll2dCXg/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1545,7 +1545,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbx69CWF7PD1GLdoUWOUuo9el66GcCinjmH0ut3_6qt_1K7uzVHrNDs8twWg7VVcJoIDhg/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbxXRQIojG-mXjRbXxiIprZ2xGQ8Xtk-KmQtEiCwWUVALBaIuaTUcBFQXJI3n-5ll2dCXg/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -3597,8 +3597,8 @@ function renderRecuHTML(r,cfg){
   var h='';
   h+='<div style="font-family:Arial,Helvetica,sans-serif;width:100%;max-width:794px;margin:0 auto;display:flex;flex-direction:column;min-height:277mm">';
   h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;display:flex;align-items:center;min-height:145px;padding:10px 14px;gap:12px;flex-shrink:0">';
-  h+='<div style="background:#C0392B;border-radius:8px;width:165px;height:125px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">';
-  h+=(logoG?'<img src="'+logoG+'" style="width:165px;height:125px;object-fit:cover;border-radius:8px" alt="">':'<div style="color:rgba(255,255,255,.3);font-size:11px;text-align:center">Logo gauche</div>');
+  h+='<div style="background:#fff;border-radius:8px;width:165px;height:125px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">';
+  h+=(logoG?'<img src="'+logoG+'" style="width:165px;height:125px;object-fit:cover;object-position:center" alt="">':'<div style="color:#ccc;font-size:11px;text-align:center">Logo gauche</div>');
   h+='</div>';
   h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">';
   h+='<div style="font-size:34px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:3px;text-align:center">REÇU DE PAIEMENT</div>';
@@ -3625,7 +3625,7 @@ function renderRecuHTML(r,cfg){
   h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">Client :</div>';
   h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px">'+r.nom_client+'</span><span style="font-size:11px;color:#888;font-weight:400">'+(r.tel_client||'')+'</span></div>';
   h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">Véhicule :</div>';
-  h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB">'+r.marque+' '+r.modele+' — '+r.immatriculation+'</div>';
+  h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB">'+r.marque+' '+r.modele+(r.immatriculation&&r.immatriculation!='undefined'?' — '+r.immatriculation:'')+'</div>';
   h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">Mission :</div>';
   h+='<div style="font-size:13px;font-weight:700;padding:7px 4px;border-bottom:1px solid #EBEBEB">'+r.lieu_embarquement+' → '+r.destination+'</div>';
   h+='<div style="font-size:11px;color:#666;text-transform:uppercase;padding:7px 4px;border-bottom:1px solid #EBEBEB">N° Bon de livraison :</div>';

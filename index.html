@@ -1507,6 +1507,65 @@ var pdfData = null; // dernière donnée pour download
 // ══════════════════════════════════════════════════════════
 //  DONNÉES LOCALES (config + utilisateurs)
 // ══════════════════════════════════════════════════════════
+// Convertir une URL image en base64 pour l'affichage cross-origin
+function imgToBase64(url, cb){
+  if(!url || url.indexOf('data:')===0){cb(url);return;}
+  var img=new Image();
+  img.crossOrigin='anonymous';
+  img.onload=function(){
+    try{
+      var canvas=document.createElement('canvas');
+      canvas.width=img.naturalWidth||img.width;
+      canvas.height=img.naturalHeight||img.height;
+      canvas.getContext('2d').drawImage(img,0,0);
+      cb(canvas.toDataURL('image/png'));
+    }catch(e){cb(url);}
+  };
+  img.onerror=function(){cb(url);};
+  img.src=url+'?t='+Date.now();
+}
+
+// Charger et mettre en cache les logos en base64
+function chargerLogosBase64(cb){
+  var cfg=getConfig();
+  var logoG=cfg.logoG||'';
+  var logoD=cfg.logoD||'';
+  var cached={
+    logoG:lsGet('logo_b64_G')||'',
+    logoD:lsGet('logo_b64_D')||''
+  };
+  // Si déjà en base64 ou en cache
+  if((logoG.indexOf('data:')===0||!logoG) && (logoD.indexOf('data:')===0||!logoD)){
+    cb({logoG:logoG,logoD:logoD});
+    return;
+  }
+  if(cached.logoG && cached.logoD){
+    cb(cached);
+    return;
+  }
+  var result={logoG:logoG,logoD:logoD};
+  var pending=0;
+  if(logoG && logoG.indexOf('data:')!==0){
+    pending++;
+    imgToBase64(logoG,function(b64){
+      result.logoG=b64;
+      if(b64.indexOf('data:')===0) lsSet('logo_b64_G',b64);
+      pending--;
+      if(pending===0) cb(result);
+    });
+  }
+  if(logoD && logoD.indexOf('data:')!==0){
+    pending++;
+    imgToBase64(logoD,function(b64){
+      result.logoD=b64;
+      if(b64.indexOf('data:')===0) lsSet('logo_b64_D',b64);
+      pending--;
+      if(pending===0) cb(result);
+    });
+  }
+  if(pending===0) cb(result);
+}
+
 function getConfig(){
   var defaults={nom:'Multi Auto Center',tel:'',adr:'',ville:'',email:'',web:'',logoG:'',logoD:'',script:'',pwdAdmin:'admin2024',pwdSec:'secretaire2024'};
   var cfg=lsGet('app_config')||{};
@@ -3241,22 +3300,32 @@ function telechargerRecuById(id){var r=rcDataStore[id];if(r)telechargerDoc(r,'re
 function voirRecu(r){
   currentPDFData={type:'recu',data:r};
   var cfg=getConfig();
-  G('modal-pdf-content').innerHTML=renderRecuHTML(r,cfg);
-  G('modal-pdf-title').textContent='Reçu — '+r.recu_num;
-  openModal('modal-pdf');
+  chargerLogosBase64(function(logos){
+    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
+    G('modal-pdf-content').innerHTML=renderRecuHTML(r,cfg);
+    G('modal-pdf-title').textContent='Reçu — '+r.recu_num;
+    openModal('modal-pdf');
+  });
 }
 
 function imprimerDoc(data,type){
-  var cfg=getConfig();
-  var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
   var nom=type==='bl'?data.bon_num:data.recu_num;
-  ouvrirDocumentPrint(html,nom);
+  chargerLogosBase64(function(logos){
+    var cfg=getConfig();
+    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
+    var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
+    ouvrirDocumentPrint(html,nom);
+  });
 }
 
 function telechargerDoc(data,type){
-  var cfg=getConfig();
-  var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
   var nom=type==='bl'?data.bon_num:data.recu_num;
+  loader(true,'Chargement logos...');
+  chargerLogosBase64(function(logos){
+    var cfg=getConfig();
+    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
+    var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
+    loader(false);
 
   // Créer conteneur temporaire invisible
   var container=document.createElement('div');
@@ -3324,14 +3393,17 @@ function telechargerDoc(data,type){
       }
     });
   }
+  }); // fin chargerLogosBase64
 }
 
-
 function imprimerDoc(data,type){
-  var cfg=getConfig();
-  var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
   var nom=type==='bl'?data.bon_num:data.recu_num;
-  ouvrirDocumentPrint(html,nom);
+  chargerLogosBase64(function(logos){
+    var cfg=getConfig();
+    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
+    var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
+    ouvrirDocumentPrint(html,nom);
+  });
 }
 
 function telechargerDoc(data,type){
@@ -3399,16 +3471,22 @@ function telechargerRecuById(id){var r=rcDataStore[id];if(r)telechargerDoc(r,'re
 function voirRecu(r){
   currentPDFData={type:'recu',data:r};
   var cfg=getConfig();
-  G('modal-pdf-content').innerHTML=renderRecuHTML(r,cfg);
-  G('modal-pdf-title').textContent='Reçu — '+r.recu_num;
-  openModal('modal-pdf');
+  chargerLogosBase64(function(logos){
+    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
+    G('modal-pdf-content').innerHTML=renderRecuHTML(r,cfg);
+    G('modal-pdf-title').textContent='Reçu — '+r.recu_num;
+    openModal('modal-pdf');
+  });
 }
 
 function imprimerDoc(data,type){
-  var cfg=getConfig();
-  var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
   var nom=type==='bl'?data.bon_num:data.recu_num;
-  ouvrirDocumentPrint(html,nom);
+  chargerLogosBase64(function(logos){
+    var cfg=getConfig();
+    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
+    var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
+    ouvrirDocumentPrint(html,nom);
+  });
 }
 
 
@@ -3428,11 +3506,13 @@ function getPrintHTML(html,nom){
 
 function voirBL(b){
   currentPDFData={type:'bl',data:b};
-  var cont=G('modal-pdf-content');
   var cfg=getConfig();
-  cont.innerHTML=renderBLHTML(b,cfg);
-  G('modal-pdf-title').textContent='BL — '+b.bon_num;
-  openModal('modal-pdf');
+  chargerLogosBase64(function(logos){
+    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
+    G('modal-pdf-content').innerHTML=renderBLHTML(b,cfg);
+    G('modal-pdf-title').textContent='BL — '+b.bon_num;
+    openModal('modal-pdf');
+  });
 }
 
 function renderBLHTML(b,cfg){

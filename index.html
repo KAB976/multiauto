@@ -1179,25 +1179,41 @@ function toutCocherBL(btn){toutCocher('sel-bl',btn);}
 function toutCocherRC(btn){toutCocher('sel-rc',btn);}
 
 function imprimerListe(tableId, titre){
-  // Imprimer le tableau visible tel quel sur l'écran
   var table=G(tableId);
   if(!table){showToast('Tableau introuvable');return;}
   var rows=table.querySelectorAll('tbody tr');
   if(!rows.length){showToast('Aucune donnée à imprimer');return;}
 
-  // Cloner le tableau pour l'impression
-  var tableClone=table.cloneNode(true);
-  // Supprimer la colonne checkbox (col 0) et la colonne Actions (dernière)
-  tableClone.querySelectorAll('tr').forEach(function(tr){
-    var cells=tr.querySelectorAll('th,td');
-    if(cells.length>0 && cells[0].querySelector('input[type="checkbox"]')){
-      cells[0].remove(); // supprimer checkbox
-    }
-    var cells2=tr.querySelectorAll('th,td');
-    if(cells2.length>0){
-      cells2[cells2.length-1].remove(); // supprimer Actions
-    }
+  // Construire le HTML à partir des lignes ACTUELLEMENT AFFICHÉES dans l'ordre du DOM
+  // (respecte le tri et le filtre visible à l'écran)
+  var thead=table.querySelector('thead');
+  var theadHtml='<thead><tr>';
+  if(thead){
+    thead.querySelectorAll('th').forEach(function(th,i){
+      // Ignorer col 0 (checkbox) et dernière col (Actions)
+      if(i===0) return; // checkbox
+      var txt=th.textContent.replace(' ↑','').replace(' ↓','').trim();
+      if(txt==='Actions') return;
+      theadHtml+='<th>'+txt+'</th>';
+    });
+  }
+  theadHtml+='</tr></thead>';
+
+  var tbodyHtml='<tbody>';
+  rows.forEach(function(tr){
+    tbodyHtml+='<tr>';
+    tr.querySelectorAll('td').forEach(function(td,i){
+      if(i===0) return; // checkbox
+      // Dernière colonne = Actions, ignorer
+      var cells=tr.querySelectorAll('td');
+      if(i===cells.length-1) return;
+      // Récupérer le texte visible (pas les boutons)
+      var txt=td.textContent.trim();
+      tbodyHtml+='<td>'+txt+'</td>';
+    });
+    tbodyHtml+='</tr>';
   });
+  tbodyHtml+='</tbody>';
 
   var cfg=getConfig();
   var nom=cfg.nom||'Multi Auto Center';
@@ -1222,7 +1238,7 @@ function imprimerListe(tableId, titre){
     +'<h2>'+titre+'</h2>'
     +'<span>'+nom+' &nbsp;|&nbsp; Imprimé le '+fmtDate(new Date())+'</span>'
     +'</div>'
-    +tableClone.outerHTML
+    +'<table>'+theadHtml+tbodyHtml+'</table>'
     +'<div class="footer-print">'
     +'<span>'+nom+'</span>'
     +'<span>Document généré le '+fmtDate(new Date())+'</span>'

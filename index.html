@@ -485,6 +485,8 @@ tr:nth-child(even) td{background:var(--gy)}
           <div class="fg"><span class="fl">Date fin</span><input class="f-inp" type="date" id="sec-bl-d2"></div>
           <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="sec-bl-chauf"><option value="">Tous</option></select></div>
           <button class="btn btn-or" onclick="secLoadBL()">🔍 Filtrer</button>
+          <button class="btn btn-gy" onclick="toutCocher('sel-bl',this)">☑️ Tout cocher</button>
+          <button class="btn btn-bl" onclick="imprimerSelection('bl')">🖨️ Imprimer sélection</button>
         </div>
         <div class="stat-grid" id="sec-bl-stats"></div>
         <div class="tbl-wrap"><table id="sec-bl-table"><thead><tr><th onclick="sortTable('sec-bl-body',0,'str')" style="cursor:pointer">N° BL</th><th onclick="sortTable('sec-bl-body',1,'date')" style="cursor:pointer">Date/Heure</th><th>Tarif</th><th onclick="sortTable('sec-bl-body',3,'str')" style="cursor:pointer">Chauffeur</th><th onclick="sortTable('sec-bl-body',4,'str')" style="cursor:pointer">Client</th><th onclick="sortTable('sec-bl-body',5,'str')" style="cursor:pointer">Véhicule</th><th onclick="sortTable('sec-bl-body',6,'str')" style="cursor:pointer">Trajet</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="sec-bl-body"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer pour charger les données</td></tr></tbody></table></div>
@@ -500,6 +502,8 @@ tr:nth-child(even) td{background:var(--gy)}
           <div class="fg"><span class="fl">Date fin</span><input class="f-inp" type="date" id="sec-rc-d2"></div>
           <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="sec-rc-chauf"><option value="">Tous</option></select></div>
           <button class="btn btn-or" onclick="secLoadRecus()">🔍 Filtrer</button>
+          <button class="btn btn-gy" onclick="toutCocher('sel-rc',this)">☑️ Tout cocher</button>
+          <button class="btn btn-bl" onclick="imprimerSelection('recu')">🖨️ Imprimer sélection</button>
         </div>
         <div class="tbl-wrap"><table><thead><tr><th onclick="sortTable('sec-rc-body',0,'str')" style="cursor:pointer">N° Reçu</th><th onclick="sortTable('sec-rc-body',1,'date')" style="cursor:pointer">Date</th><th onclick="sortTable('sec-rc-body',2,'str')" style="cursor:pointer">Chauffeur</th><th onclick="sortTable('sec-rc-body',3,'str')" style="cursor:pointer">Client</th><th onclick="sortTable('sec-rc-body',4,'num')" style="cursor:pointer">Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="sec-rc-body"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer</td></tr></tbody></table></div>
       </div>
@@ -556,6 +560,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <div class="fg"><span class="fl">Date fin</span><input class="f-inp" type="date" id="sec-st-d2"></div>
           <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="sec-st-chauf"><option value="">Tous</option></select></div>
           <button class="btn btn-or" onclick="secLoadStats()">📊 Calculer</button>
+          <button class="btn btn-bl" onclick="imprimerStats('sec')">🖨️ Imprimer stats</button>
         </div>
         <div id="sec-stats-content"><div style="text-align:center;padding:30px;color:var(--mt)">Définissez une période et cliquez sur Calculer</div></div>
       </div>
@@ -619,6 +624,8 @@ tr:nth-child(even) td{background:var(--gy)}
           <div class="fg"><span class="fl">Date fin</span><input class="f-inp" type="date" id="adm-bl-d2"></div>
           <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="adm-bl-chauf"><option value="">Tous</option></select></div>
           <button class="btn btn-or" onclick="admLoadBL()">🔍 Filtrer</button>
+          <button class="btn btn-gy" onclick="toutCocher('sel-bl',this)">☑️ Tout cocher</button>
+          <button class="btn btn-bl" onclick="imprimerSelection('bl')">🖨️ Imprimer sélection</button>
         </div>
         <div class="tbl-wrap"><table><thead><tr><th>N° BL</th><th>Date/Heure</th><th>Tarif</th><th>Chauffeur</th><th>Client</th><th>Véhicule</th><th>Trajet</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="adm-bl-body"></tbody></table></div>
       </div>
@@ -629,6 +636,8 @@ tr:nth-child(even) td{background:var(--gy)}
           <div class="fg"><span class="fl">Date fin</span><input class="f-inp" type="date" id="adm-rc-d2"></div>
           <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="adm-rc-chauf"><option value="">Tous</option></select></div>
           <button class="btn btn-or" onclick="admLoadRecus()">🔍 Filtrer</button>
+          <button class="btn btn-gy" onclick="toutCocher('sel-rc',this)">☑️ Tout cocher</button>
+          <button class="btn btn-bl" onclick="imprimerSelection('recu')">🖨️ Imprimer sélection</button>
         </div>
         <div class="tbl-wrap"><table><thead><tr><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-rc-body"></tbody></table></div>
       </div>
@@ -645,6 +654,8 @@ tr:nth-child(even) td{background:var(--gy)}
           <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="adm-gps-chauf"><option value="">Tous</option></select></div>
           <div class="fg"><span class="fl">N° BL</span><input class="f-inp" type="text" id="adm-gps-bl" placeholder="Ex: AHM/BL-000012"></div>
           <button class="btn btn-or" onclick="admLoadGPS()">🔍 Filtrer</button>
+          <button class="btn btn-gy" onclick="toutCocher('sel-gps',this)">☑️ Tout cocher</button>
+          <button class="btn btn-bl" onclick="imprimerSelectionGPS()">🖨️ Imprimer sélection</button>
         </div>
         <div class="tbl-wrap"><table><thead><tr><th>N° BL</th><th>Date</th><th>Chauffeur</th><th>Embarquement</th><th>Destination</th><th>Durée trajet</th><th>Carte</th></tr></thead><tbody id="adm-gps-body"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer</td></tr></tbody></table></div>
       </div>
@@ -749,6 +760,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <div class="fg"><span class="fl">Date fin</span><input class="f-inp" type="date" id="adm-st-d2"></div>
           <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="adm-st-chauf"><option value="">Tous</option></select></div>
           <button class="btn btn-or" onclick="admLoadStats()">📊 Calculer</button>
+          <button class="btn btn-bl" onclick="imprimerStats('adm')">🖨️ Imprimer stats</button>
         </div>
         <div id="adm-stats-content"><div style="text-align:center;padding:30px;color:var(--mt)">Définissez une période et cliquez sur Calculer</div></div>
       </div>
@@ -1138,6 +1150,71 @@ function fmtBL(pref,n){return pref+'/BL-'+fmtNum(n)}
 function fmtRC(pref,n){return pref+'/R-'+fmtNum(n)}
 
 // ── TRI TABLEAUX ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+// IMPRESSION DE SÉLECTION
+// ══════════════════════════════════════════════════════
+// Stores
+var gpsDataStore={};
+
+function toutCocher(cls,btn){
+  var checked=document.querySelectorAll('.'+cls+':checked').length>0;
+  document.querySelectorAll('.'+cls).forEach(function(cb){cb.checked=!checked;});
+  btn.textContent=checked?'☑️ Tout cocher':'☐ Tout décocher';
+}
+
+// Anciens alias pour compatibilité
+function toutCocherBL(btn){toutCocher('sel-bl',btn);}
+function toutCocherRC(btn){toutCocher('sel-rc',btn);}
+
+function imprimerSelection(type){
+  var cfg=getConfig();
+  var cls=type==='bl'?'sel-bl':'sel-rc';
+  var store=type==='bl'?blDataStore:rcDataStore;
+  var renderFn=type==='bl'?renderBLHTML:renderRecuHTML;
+  var selected=[];
+  document.querySelectorAll('.'+cls+':checked').forEach(function(cb){
+    var d=store[cb.dataset.id];
+    if(d) selected.push(d);
+  });
+  if(!selected.length){showToast('Cochez au moins un élément à imprimer');return;}
+  var html=selected.map(function(d){
+    return '<div style="page-break-after:always">'+renderFn(d,cfg)+'</div>';
+  }).join('');
+  ouvrirDocumentPrint(html,'Selection_'+(type==='bl'?'BL':'Recus')+'_'+selected.length);
+}
+
+function imprimerSelectionGPS(){
+  var rows=document.querySelectorAll('.sel-gps:checked');
+  if(!rows.length){showToast('Cochez au moins une ligne GPS');return;}
+  var html='<style>*{box-sizing:border-box;font-family:Arial,sans-serif}table{width:100%;border-collapse:collapse}th{background:#C0392B;color:#fff;padding:8px;font-size:11px;text-align:left}td{padding:7px;border-bottom:1px solid #eee;font-size:12px}h2{color:#C0392B;margin-bottom:12px}</style>';
+  html+='<h2>GPS / Trajets — Sélection</h2>';
+  html+='<table><thead><tr><th>N° BL</th><th>Date</th><th>Chauffeur</th><th>Embarquement</th><th>Destination</th><th>Durée</th></tr></thead><tbody>';
+  rows.forEach(function(cb){
+    var g=gpsDataStore[cb.dataset.id];
+    if(!g) return;
+    html+='<tr>'
+      +'<td style="font-family:monospace;font-weight:700">'+g.bon_num+'</td>'
+      +'<td>'+formatDateFR(String(g.date_bl||''))+'</td>'
+      +'<td>'+g.chauffeur_nom+'</td>'
+      +'<td>'+g.lieu_embarquement+'</td>'
+      +'<td>'+g.destination+'</td>'
+      +'<td>'+(g.duree_min?g.duree_min+' min':'—')+'</td>'
+      +'</tr>';
+  });
+  html+='</tbody></table>';
+  ouvrirDocumentPrint(html,'Selection_GPS');
+}
+
+function imprimerStats(portail){
+  var prefix=portail==='adm'?'adm':'sec';
+  var statsEl=document.getElementById(prefix+'-st-results')||document.getElementById(prefix+'-stats-content');
+  if(!statsEl){showToast('Aucune statistique à imprimer');return;}
+  var html='<style>*{box-sizing:border-box;font-family:Arial,sans-serif}h2{color:#C0392B;margin-bottom:14px}.stat-card{border:1px solid #E0E0E0;border-radius:8px;padding:14px;margin-bottom:10px;break-inside:avoid}</style>';
+  html+='<h2>Statistiques — '+fmtDate(new Date())+'</h2>';
+  html+=statsEl.innerHTML;
+  ouvrirDocumentPrint(html,'Statistiques_'+fmtDate(new Date()));
+}
+
 function parseDateHeure(dateStr, heureStr){
   var d=parseLocalDate(formatDateFR(String(dateStr||'')));
   if(!d) return 0;
@@ -1266,12 +1343,19 @@ function voirGPS(g){
 // ── FILTRE DATES CÔTÉ CLIENT ──────────────────────────────
 function filtrerParDate(items, champDate, d1, d2){
   if(!d1 && !d2) return items;
+  var dd1=d1?parseLocalDate(d1):null;
+  var dd2=d2?parseLocalDate(d2):null;
+  if(dd1) dd1.setHours(0,0,0,0);
+  if(dd2) dd2.setHours(23,59,59,999);
   return items.filter(function(item){
-    var dateStr = item[champDate] || '';
-    var d = parseLocalDate(dateStr);
-    if(!d) return true;
-    if(d1){ var dd=parseLocalDate(d1); if(dd && d < dd) return false; }
-    if(d2){ var dd=parseLocalDate(d2); if(dd){ dd.setHours(23,59,59); if(d > dd) return false; } }
+    var dateStr=String(item[champDate]||'');
+    // Utiliser formatDateFR pour normaliser d'abord
+    var dateFR=formatDateFR(dateStr);
+    var d=parseLocalDate(dateFR);
+    if(!d) return false; // Si date invalide, exclure
+    d.setHours(12,0,0,0); // Midi pour éviter problèmes timezone
+    if(dd1 && d<dd1) return false;
+    if(dd2 && d>dd2) return false;
     return true;
   });
 }
@@ -2767,7 +2851,10 @@ function admLoadGPS(){
       var destVille=g.destination||'—';
       var hasGPS=g.gps_emb_lat&&g.gps_emb_lng&&g.gps_dest_lat&&g.gps_dest_lng;
       var carte=hasGPS?'<a class="tbtn tbtn-bl" href="https://www.google.com/maps/dir/'+g.gps_emb_lat+','+g.gps_emb_lng+'/'+g.gps_dest_lat+','+g.gps_dest_lng+'" target="_blank">🗺️ Carte</a>':'—';
+      var gid='g'+i;
+      gpsDataStore[gid]=g;
       return '<tr>'
+        +'<td><input type="checkbox" class="sel-gps" data-id="'+gid+'"></td>'
         +'<td style="font-family:monospace;font-weight:700">'+g.bon_num+'</td>'
         +'<td>'+dateFR+'</td>'
         +'<td>'+g.chauffeur_nom+'</td>'

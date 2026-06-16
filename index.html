@@ -2550,12 +2550,28 @@ function secTab(id,btn){
 
 function chargerSelectsChauffeurs(ids){
   var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
-  ids.forEach(function(id){
-    var sel=G(id);
-    if(!sel) return;
-    sel.innerHTML='<option value="">Tous</option>';
-    users.forEach(function(u){sel.innerHTML+='<option value="'+u.nom+'">'+u.nom+'</option>'});
-  });
+  function remplir(liste){
+    ids.forEach(function(id){
+      var sel=G(id);
+      if(!sel) return;
+      sel.innerHTML='<option value="">Tous</option>';
+      liste.forEach(function(u){sel.innerHTML+='<option value="'+u.nom+'">'+u.nom+'</option>';});
+    });
+  }
+  if(users.length){
+    remplir(users);
+  } else {
+    // Charger depuis Sheets si localStorage vide (nouvel appareil)
+    apiCall({action:'getUsers'},function(data,err){
+      if(!err && data && data.users && data.users.length){
+        saveUsers(data.users);
+        var sorted=data.users.slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr');});
+        remplir(sorted);
+      } else {
+        remplir([]);
+      }
+    });
+  }
 }
 
 // API CALL

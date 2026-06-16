@@ -1165,10 +1165,13 @@ function toutCocherAll(cls,chk){
 
 function toutCocher(cls,btn){
   var all=document.querySelectorAll('.'+cls);
-  if(!all.length){showToast('Chargez les données d abord puis cochez');return;}
-  var checked=document.querySelectorAll('.'+cls+':checked').length>0;
-  all.forEach(function(cb){cb.checked=!checked;});
-  btn.textContent=checked?'☑️ Tout cocher':'☐ Tout décocher';
+  if(!all.length){
+    showToast('Filtrez d abord les données puis cochez');
+    return;
+  }
+  var allChecked=all.length===document.querySelectorAll('.'+cls+':checked').length;
+  all.forEach(function(cb){cb.checked=!allChecked;});
+  btn.textContent=allChecked?'☑️ Tout cocher':'☐ Tout décocher';
 }
 
 // Anciens alias pour compatibilité
@@ -1225,18 +1228,22 @@ function imprimerStats(portail){
 }
 
 function parseDateHeure(dateStr, heureStr){
-  var d=parseLocalDate(formatDateFR(String(dateStr||'')));
-  if(!d) return 0;
-  var ts=d.getTime();
-  if(heureStr){
-    var hFR=formatHeureFR(String(heureStr));
-    var h=hFR.replace('h',':');
-    var parts=h.split(':');
-    if(parts.length>=2){
-      ts+=parseInt(parts[0]||0)*3600000+parseInt(parts[1]||0)*60000;
+  try{
+    var dateFR=formatDateFR(String(dateStr||''));
+    if(!dateFR) return 0;
+    var d=parseLocalDate(dateFR);
+    if(!d) return 0;
+    var ts=d.getTime();
+    if(heureStr){
+      var hStr=String(heureStr||'');
+      var hFR=formatHeureFR(hStr);
+      if(hFR && hFR.indexOf('h')>0){
+        var parts=hFR.split('h');
+        ts+=(parseInt(parts[0])||0)*3600000+(parseInt(parts[1])||0)*60000;
+      }
     }
-  }
-  return ts;
+    return ts;
+  }catch(e){return 0;}
 }
 
 function parseLocalDate(str){

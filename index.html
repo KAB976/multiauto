@@ -2564,6 +2564,7 @@ function renderBLTable(bls,tbodyId,isAdmin){
     var paiement=b.montant_especes?(parseFloat(b.montant_especes||0).toFixed(2)+' €'):'—';
     var del=isAdmin?'<button class="tbtn tbtn-re bl-del" data-num="'+b.bon_num+'">🗑</button>':'';
     return '<tr>'
+      +'<td style="width:30px;text-align:center"><input type="checkbox" class="sel-bl" data-id="'+bid+'"></td>'
       +'<td style="font-family:monospace;font-weight:700;white-space:nowrap">'+b.bon_num+'</td>'
       +'<td style="white-space:nowrap">'+dateAff+'</td>'
       +'<td>'+tnBadge+'</td>'
@@ -2643,6 +2644,7 @@ function renderRecusTable(recus,tbodyId,isAdmin){
     var heureRC=formatHeureFR(r.heure_bl||'');
     var del=isAdmin?'<button class="tbtn tbtn-re rc-del" data-num="'+r.recu_num+'">🗑</button>':'';
     return '<tr>'
+      +'<td style="width:30px;text-align:center"><input type="checkbox" class="sel-rc" data-id="'+rid+'"></td>'
       +'<td style="font-family:monospace;font-weight:700;color:var(--or);white-space:nowrap">'+r.recu_num+'</td>'
       +'<td style="white-space:nowrap">'+dateFR+'</td>'
       +'<td>'+r.chauffeur_nom+'</td>'
@@ -2857,8 +2859,14 @@ function admLoadGPS(){
       return;
     }
     var gps=data.gps||[];
+    // Filtre côté client aussi pour sécurité
+    var d1Val=G('adm-gps-d1').value||'';
+    var d2Val=G('adm-gps-d2').value||'';
+    var chaufVal=G('adm-gps-chauf').value||'';
+    if(d1Val||d2Val) gps=filtrerParDate(gps,'date_bl',d1Val,d2Val);
+    if(chaufVal) gps=gps.filter(function(g){return g.chauffeur_nom===chaufVal;});
     if(!gps.length){
-      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Aucune donnée GPS. Essayez sans filtres.</td></tr>';
+      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Aucune donnée GPS pour ces critères.</td></tr>';
       return;
     }
     gps=gps.slice().sort(function(a,b2){

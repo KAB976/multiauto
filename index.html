@@ -1102,7 +1102,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXRQIojG-mXjRbXxiIprZ2xGQ8Xtk-KmQtEiCwWUVALBaIuaTUcBFQXJI3n-5ll2dCXg/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJEJPcJRzN1xd3Yecjgj4ujzepujeHBEfXlCUbK7QWE4W06bQnNH5CXVD0QtXDGq74cw/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1604,7 +1604,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbxXRQIojG-mXjRbXxiIprZ2xGQ8Xtk-KmQtEiCwWUVALBaIuaTUcBFQXJI3n-5ll2dCXg/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbyJEJPcJRzN1xd3Yecjgj4ujzepujeHBEfXlCUbK7QWE4W06bQnNH5CXVD0QtXDGq74cw/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -3329,7 +3329,7 @@ function telechargerDoc(data,type){
 
   // Créer conteneur temporaire invisible
   var container=document.createElement('div');
-  container.style.cssText='position:fixed;left:-9999px;top:0;width:794px;min-height:1123px;background:#fff;font-family:Arial,sans-serif;font-size:13px;color:#1A1A1A;-webkit-print-color-adjust:exact;print-color-adjust:exact';
+  container.style.cssText='position:absolute;left:-9999px;top:0;width:794px;background:#fff;font-family:Arial,sans-serif;font-size:13px;color:#1A1A1A;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;visibility:visible';
   container.innerHTML=html;
   document.body.appendChild(container);
 
@@ -3468,16 +3468,6 @@ function imprimerRecuById(id){var r=rcDataStore[id];if(r)imprimerDoc(r,'recu');e
 function telechargerBLById(id){var b=blDataStore[id];if(b)telechargerDoc(b,'bl');else showToast('Données introuvables');}
 function telechargerRecuById(id){var r=rcDataStore[id];if(r)telechargerDoc(r,'recu');else showToast('Données introuvables');}
 
-function voirRecu(r){
-  currentPDFData={type:'recu',data:r};
-  var cfg=getConfig();
-  chargerLogosBase64(function(logos){
-    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
-    G('modal-pdf-content').innerHTML=renderRecuHTML(r,cfg);
-    G('modal-pdf-title').textContent='Reçu — '+r.recu_num;
-    openModal('modal-pdf');
-  });
-}
 
 function imprimerDoc(data,type){
   var nom=type==='bl'?data.bon_num:data.recu_num;
@@ -3612,17 +3602,18 @@ function renderBLHTML(b,cfg){
   // PHOTO + SIGNATURE
   h+='<div style="position:relative;z-index:1;display:flex;gap:14px;flex:1">';
   h+='<div style="flex:1;border:1px solid #E0E0E0;border-radius:8px;overflow:hidden;display:flex;flex-direction:column">';
-  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">📷 Photo du véhicule</div>';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:4px 4px 0 0">📷 Photo du véhicule</div>';
   h+=(photoSrc
-    ?'<div style="flex:1;display:flex;align-items:center;justify-content:center;background:#FAFAFA;padding:6px"><img src="'+photoSrc+'" style="max-width:100%;max-height:160px;object-fit:contain;border-radius:6px;image-orientation:from-image" alt="Photo"></div>'
-    :'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FAFAFA;color:#CCC;gap:6px;min-height:130px"><div style="font-size:32px">📷</div><div style="font-size:11px">Aucune photo</div></div>');
+    ?'<div style="text-align:center;padding:4px"><img src="'+photoSrc+'" style="max-height:130px;max-width:100%;object-fit:contain;image-orientation:from-image;display:inline-block" alt="Photo"></div>'
+    :'<div style="padding:8px;text-align:center;color:#CCC;font-size:11px">Aucune photo</div>');
   h+='</div>';
   // Signature réduite
-  h+='<div style="width:190px;flex-shrink:0;border:1px solid #E0E0E0;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;align-self:flex-start">';
-  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">✍️ Signature</div>';
+  // Signature: cadre ajusté
+  h+='<div style="width:180px;flex-shrink:0">';
+  h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:5px 10px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:4px 4px 0 0">✍️ Signature</div>';
   h+=(sigSrc
-    ?'<div style="height:80px;display:flex;align-items:center;justify-content:center;background:#FAFAFA;padding:4px"><img src="'+sigSrc+'" style="max-width:100%;max-height:72px;object-fit:contain" alt="Signature"></div>'
-    :'<div style="height:80px;display:flex;align-items:center;justify-content:center;background:#FAFAFA;color:#CCC;font-size:11px">Aucune signature</div>');
+    ?'<div style="display:flex;align-items:center;justify-content:center;padding:4px"><img src="'+sigSrc+'" style="max-width:100%;max-height:80px;object-fit:contain;display:block" alt="Signature"></div>'
+    :'<div style="height:40px;display:flex;align-items:center;justify-content:center;color:#CCC;font-size:11px">Aucune signature</div>');
   h+='</div>';
   h+='</div>';
 

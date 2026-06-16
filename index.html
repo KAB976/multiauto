@@ -489,7 +489,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <button class="btn btn-bl" onclick="imprimerSelection('bl')">🖨️ Imprimer sélection</button>
         </div>
         <div class="stat-grid" id="sec-bl-stats"></div>
-        <div class="tbl-wrap"><table id="sec-bl-table"><thead><tr><th onclick="sortTable('sec-bl-body',0,'str')" style="cursor:pointer">N° BL</th><th onclick="sortTable('sec-bl-body',1,'date')" style="cursor:pointer">Date/Heure</th><th>Tarif</th><th onclick="sortTable('sec-bl-body',3,'str')" style="cursor:pointer">Chauffeur</th><th onclick="sortTable('sec-bl-body',4,'str')" style="cursor:pointer">Client</th><th onclick="sortTable('sec-bl-body',5,'str')" style="cursor:pointer">Véhicule</th><th onclick="sortTable('sec-bl-body',6,'str')" style="cursor:pointer">Trajet</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="sec-bl-body"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer pour charger les données</td></tr></tbody></table></div>
+        <div class="tbl-wrap"><table id="sec-bl-table"><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-bl',this)"></th><th onclick="sortTable('sec-bl-body',1,'str')" style="cursor:pointer">N° BL</th><th onclick="sortTable('sec-bl-body',2,'date')" style="cursor:pointer">Date/Heure</th><th>Tarif</th><th onclick="sortTable('sec-bl-body',4,'str')" style="cursor:pointer">Chauffeur</th><th onclick="sortTable('sec-bl-body',5,'str')" style="cursor:pointer">Client</th><th onclick="sortTable('sec-bl-body',6,'str')" style="cursor:pointer">Véhicule</th><th onclick="sortTable('sec-bl-body',7,'str')" style="cursor:pointer">Trajet</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="sec-bl-body"><tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer pour charger les données</td></tr></tbody></table></div>
       </div>
     </div>
 
@@ -505,7 +505,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <button class="btn btn-gy" onclick="toutCocher('sel-rc',this)">☑️ Tout cocher</button>
           <button class="btn btn-bl" onclick="imprimerSelection('recu')">🖨️ Imprimer sélection</button>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th onclick="sortTable('sec-rc-body',0,'str')" style="cursor:pointer">N° Reçu</th><th onclick="sortTable('sec-rc-body',1,'date')" style="cursor:pointer">Date</th><th onclick="sortTable('sec-rc-body',2,'str')" style="cursor:pointer">Chauffeur</th><th onclick="sortTable('sec-rc-body',3,'str')" style="cursor:pointer">Client</th><th onclick="sortTable('sec-rc-body',4,'num')" style="cursor:pointer">Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="sec-rc-body"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer</td></tr></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-rc',this)"></th><th onclick="sortTable('sec-rc-body',1,'str')" style="cursor:pointer">N° Reçu</th><th onclick="sortTable('sec-rc-body',2,'date')" style="cursor:pointer">Date</th><th onclick="sortTable('sec-rc-body',3,'str')" style="cursor:pointer">Chauffeur</th><th onclick="sortTable('sec-rc-body',4,'str')" style="cursor:pointer">Client</th><th onclick="sortTable('sec-rc-body',5,'num')" style="cursor:pointer">Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="sec-rc-body"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Cliquez sur Filtrer</td></tr></tbody></table></div>
       </div>
     </div>
 
@@ -610,7 +610,7 @@ tr:nth-child(even) td{background:var(--gy)}
       </div>
       <div class="card">
         <div class="card-title"><span class="ico">🧾</span> Derniers reçus</div>
-        <div class="tbl-wrap"><table><thead><tr><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-dash-recus"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Chargement...</td></tr></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-rc',this)"></th><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-dash-recus"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Chargement...</td></tr></tbody></table></div>
       </div>
     </div>
 
@@ -627,7 +627,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <button class="btn btn-gy" onclick="toutCocher('sel-bl',this)">☑️ Tout cocher</button>
           <button class="btn btn-bl" onclick="imprimerSelection('bl')">🖨️ Imprimer sélection</button>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th>N° BL</th><th>Date/Heure</th><th>Tarif</th><th>Chauffeur</th><th>Client</th><th>Véhicule</th><th>Trajet</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="adm-bl-body"></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-bl',this)"></th><th>N° BL</th><th>Date/Heure</th><th>Tarif</th><th>Chauffeur</th><th>Client</th><th>Véhicule</th><th>Trajet</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="adm-bl-body"></tbody></table></div>
       </div>
       <div class="card" style="margin-top:14px">
         <div class="card-title"><span class="ico">🧾</span> Reçus de paiement</div>
@@ -639,7 +639,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <button class="btn btn-gy" onclick="toutCocher('sel-rc',this)">☑️ Tout cocher</button>
           <button class="btn btn-bl" onclick="imprimerSelection('recu')">🖨️ Imprimer sélection</button>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-rc-body"></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-rc',this)"></th><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-rc-body"></tbody></table></div>
       </div>
     </div>
 
@@ -1156,6 +1156,10 @@ function fmtRC(pref,n){return pref+'/R-'+fmtNum(n)}
 // Stores
 var gpsDataStore={};
 
+function toutCocherAll(cls,chk){
+  document.querySelectorAll('.'+cls).forEach(function(cb){cb.checked=chk.checked;});
+}
+
 function toutCocher(cls,btn){
   var checked=document.querySelectorAll('.'+cls+':checked').length>0;
   document.querySelectorAll('.'+cls).forEach(function(cb){cb.checked=!checked;});
@@ -1381,9 +1385,10 @@ function sortTable(tbodyId,col,type){
     return dir==='asc'?ta.localeCompare(tb2,'fr'):tb2.localeCompare(ta,'fr');
   });
   rows.forEach(function(r){tbody.appendChild(r)});
-  // Mettre à jour les flèches
+  // Mettre à jour les flèches (ignorer th avec checkbox)
   var ths=tbody.closest('table').querySelectorAll('th');
   ths.forEach(function(th,i){
+    if(th.querySelector('input')) return; // ignorer checkbox header
     th.textContent=th.textContent.replace(' ↑','').replace(' ↓','');
     if(i===col) th.textContent+=(dir==='asc'?' ↑':' ↓');
   });
@@ -2525,7 +2530,7 @@ function secLoadBL(){
 function renderBLTable(bls,tbodyId,isAdmin){
   var tb=G(tbodyId);
   if(!bls||!bls.length){
-    tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--mt)">Aucun bon de livraison trouvé</td></tr>';
+    tb.innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--mt)">Aucun bon de livraison trouvé</td></tr>';
     return;
   }
   bls=bls.slice().sort(function(a,b2){
@@ -2604,7 +2609,7 @@ function secLoadRecus(){
 function renderRecusTable(recus,tbodyId,isAdmin){
   var tb=G(tbodyId);
   if(!recus||!recus.length){
-    tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Aucun reçu trouvé</td></tr>';
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Aucun reçu trouvé</td></tr>';
     return;
   }
   recus=recus.slice().sort(function(a,b){

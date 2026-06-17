@@ -1103,7 +1103,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJEJPcJRzN1xd3Yecjgj4ujzepujeHBEfXlCUbK7QWE4W06bQnNH5CXVD0QtXDGq74cw/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1wIA2TKLY6wqLczYCVOuin6uRJfG9S95BN6MQZ7ossycrMiIGlNqgmExrrP0mi-QJ/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1428,7 +1428,7 @@ function filtrerParDate(items, champDate, d1, d2){
     var dateStr=String(item[champDate]||'');
     var dateFR=formatDateFR(dateStr);
     var d=parseLocalDate(dateFR);
-    if(!d) return true; // Si date invalide, garder (pas exclure)
+    if(!d) return false; // Si date invalide et filtre actif, exclure
     d.setHours(12,0,0,0);
     if(dd1 && d<dd1) return false;
     if(dd2 && d>dd2) return false;
@@ -1609,7 +1609,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbyJEJPcJRzN1xd3Yecjgj4ujzepujeHBEfXlCUbK7QWE4W06bQnNH5CXVD0QtXDGq74cw/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbx1wIA2TKLY6wqLczYCVOuin6uRJfG9S95BN6MQZ7ossycrMiIGlNqgmExrrP0mi-QJ/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -2788,7 +2788,7 @@ function renderRecusTable(recus,tbodyId,isAdmin){
   });
   rcDataStore={};
   tb.innerHTML=recus.map(function(r,i){
-    var rid='r'+i;
+    var rid=tbodyId+'_r'+i;
     rcDataStore[rid]=r;
     var dateFR=formatDateFR(String(r.date_bl||''));
     var heureRC=formatHeureFR(r.heure_bl||'');

@@ -1103,7 +1103,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1wIA2TKLY6wqLczYCVOuin6uRJfG9S95BN6MQZ7ossycrMiIGlNqgmExrrP0mi-QJ/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQ8tTGg8yDsTYYoB3L1Oz5klPw7PCLwfLle0FqLXOCZitW8a9U8R-LXmoFinA7luGR2w/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1609,7 +1609,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbx1wIA2TKLY6wqLczYCVOuin6uRJfG9S95BN6MQZ7ossycrMiIGlNqgmExrrP0mi-QJ/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbxQ8tTGg8yDsTYYoB3L1Oz5klPw7PCLwfLle0FqLXOCZitW8a9U8R-LXmoFinA7luGR2w/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -2944,23 +2944,32 @@ function admLoadDashboard(){
     G('ds-recus').textContent=data.totalRecus||0;
     G('ds-montant').textContent=parseFloat(data.totalMontant||0).toFixed(2)+' €';
     if(data.derniersBL){
-      var bls=data.derniersBL.sort(function(a,b){
+      var bls=data.derniersBL.slice().sort(function(a,b){
         var da=parseLocalDate(formatDateFR(a.date_bl));
         var db=parseLocalDate(formatDateFR(b.date_bl));
         return (db&&da)?(db-da):0;
       });
       renderBLTable(bls,'adm-dash-bl',true);
     }
-    apiCall({action:'getRecus',d1:'',d2:'',chauffeur:''},function(d2,e2){
-      if(d2&&d2.recus){
-        var recus=d2.recus.sort(function(a,b){
-          var da=parseLocalDate(formatDateFR(a.date_bl));
-          var db=parseLocalDate(formatDateFR(b.date_bl));
-          return (db&&da)?(db-da):0;
-        });
-        renderRecusTable(recus.slice(0,5),'adm-dash-recus',true);
-      }
-    });
+    if(data.derniersRecus){
+      var recus=data.derniersRecus.slice().sort(function(a,b){
+        var da=parseLocalDate(formatDateFR(a.date_bl));
+        var db=parseLocalDate(formatDateFR(b.date_bl));
+        return (db&&da)?(db-da):0;
+      });
+      renderRecusTable(recus,'adm-dash-recus',true);
+    } else {
+      apiCall({action:'getRecus',d1:'',d2:'',chauffeur:''},function(d2,e2){
+        if(d2&&d2.recus){
+          var recus=d2.recus.slice().sort(function(a,b){
+            var da=parseLocalDate(formatDateFR(a.date_bl));
+            var db=parseLocalDate(formatDateFR(b.date_bl));
+            return (db&&da)?(db-da):0;
+          });
+          renderRecusTable(recus.slice(0,20),'adm-dash-recus',true);
+        }
+      });
+    }
   });
 }
 

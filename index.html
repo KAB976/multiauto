@@ -613,7 +613,8 @@ tr:nth-child(even) td{background:var(--gy)}
       </div>
       <div class="card">
         <div class="card-title"><span class="ico">🧾</span> Derniers reçus</div>
-        <div class="tbl-wrap"><table id="adm-rc-table"><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-rc',this)"></th><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-dash-recus"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Chargement...</td></tr></tbody></table></div>
+        <div class="stat-grid" id="adm-rc-stats"></div>
+        <div class="tbl-wrap"><table id="adm-dash-rc-table"><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-rc',this)"></th><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-dash-recus"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Chargement...</td></tr></tbody></table></div>
       </div>
     
       <!-- GPS SECRÉTAIRE -->
@@ -652,6 +653,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <button class="btn btn-gy" onclick="toutCocher('sel-bl',this)">☑️ Tout cocher</button>
           <button class="btn btn-bl" onclick="imprimerListe('adm-bl-table','Bons de Livraison')">🖨️ Imprimer la liste</button>
         </div>
+        <div class="stat-grid" id="adm-bl-stats"></div>
         <div class="tbl-wrap"><table id="adm-bl-table"><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-bl',this)"></th><th>N° BL</th><th>Date/Heure</th><th>Tarif</th><th>Chauffeur</th><th>Client</th><th>Véhicule</th><th>Trajet</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="adm-bl-body"></tbody></table></div>
       </div>
       <div class="card" style="margin-top:14px">
@@ -1904,6 +1906,7 @@ function appliquerPermissionsSecretaire(){
       if(txt.indexOf('Reçus')>=0) btn.style.display=perms.recus!==false?'':'none';
       if(txt.indexOf('Clients')>=0) btn.style.display=perms.clients!==false?'':'none';
       if(txt.indexOf('Véhicules')>=0) btn.style.display=perms.vehicules!==false?'':'none';
+      if(txt.indexOf('GPS')>=0) btn.style.display=perms.gps!==false?'':'none';
       if(txt.indexOf('Statistiques')>=0) btn.style.display=perms.stats!==false?'':'none';
       if(txt.indexOf('Camion')>=0) btn.style.display=perms.camionTmp!==false?'':'none';
     });
@@ -2920,6 +2923,16 @@ function renderStatsBL(bls,statId){
   var chauffeurs=[...new Set(bls.map(function(b){return b.chauffeur_nom}))].length;
   G(statId).innerHTML='<div class="stat-box or"><div class="stat-val">'+total+'</div><div class="stat-lbl">Bons de livraison</div></div><div class="stat-box gr"><div class="stat-val">'+avecRecu+'</div><div class="stat-lbl">Reçus espèces</div></div><div class="stat-box bl"><div class="stat-val">'+montant.toFixed(2)+' €</div><div class="stat-lbl">Total encaissé</div></div><div class="stat-box"><div class="stat-val">'+chauffeurs+'</div><div class="stat-lbl">Chauffeurs</div></div>';
 }
+function renderStatsRC(recus,statId){
+  var el=G(statId); if(!el) return;
+  var total=recus.length;
+  var montant=recus.reduce(function(s,r){return s+(parseFloat(r.montant_especes)||0);},0);
+  var chauffeurs=[...new Set(recus.map(function(r){return r.chauffeur_nom}))].length;
+  el.innerHTML='<div class="stat-box or"><div class="stat-val">'+total+'</div><div class="stat-lbl">Reçus</div></div>'
+    +'<div class="stat-box gr"><div class="stat-val">'+montant.toFixed(2)+' €</div><div class="stat-lbl">Total encaissé</div></div>'
+    +'<div class="stat-box bl"><div class="stat-val">'+chauffeurs+'</div><div class="stat-lbl">Chauffeurs</div></div>';
+}
+
 
 function secLoadRecus(){
   loader(true,'Chargement...');
@@ -3203,6 +3216,7 @@ function admLoadBL(){
       return tb-ta;
     });
     renderBLTable(bls,'adm-bl-body',true);
+    if(G('adm-bl-stats')) renderStatsBL(bls,'adm-bl-stats');
   });
 }
 
@@ -3221,6 +3235,7 @@ function admLoadRecus(){
       return String(b.recu_num).localeCompare(String(a.recu_num));
     });
     renderRecusTable(recus,'adm-rc-body',true);
+    if(G('adm-rc-stats')) renderStatsRC(recus,'adm-rc-stats');
   });
 }
 
@@ -4148,6 +4163,7 @@ function appliquerPermissionsSecretaire(){
       if(txt.indexOf('Reçus')>=0) btn.style.display=perms.recus!==false?'':'none';
       if(txt.indexOf('Clients')>=0) btn.style.display=perms.clients!==false?'':'none';
       if(txt.indexOf('Véhicules')>=0) btn.style.display=perms.vehicules!==false?'':'none';
+      if(txt.indexOf('GPS')>=0) btn.style.display=perms.gps!==false?'':'none';
       if(txt.indexOf('Statistiques')>=0) btn.style.display=perms.stats!==false?'':'none';
       if(txt.indexOf('Camion')>=0) btn.style.display=perms.camionTmp!==false?'':'none';
     });

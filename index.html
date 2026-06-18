@@ -568,11 +568,11 @@ tr:nth-child(even) td{background:var(--gy)}
       </div>
     </div>
 
-    </div>
 
-      <!-- GPS SECRÉTAIRE -->
-      <div class="sub-pg" id="sec-gps">
-        <div class="card">
+
+    <!-- GPS SECRÉTAIRE -->
+    <div class="sub-pg" id="sec-gps">
+      <div class="card">
         <div class="card-title"><span class="ico">🗺️</span> GPS / Trajets</div>
         <div class="filtres">
           <div class="fg"><span class="fl">Date début</span><input class="f-inp" type="date" id="sec-gps-d1"></div>
@@ -581,24 +581,20 @@ tr:nth-child(even) td{background:var(--gy)}
           <button class="btn btn-or" onclick="secLoadGPS()">🔍 Filtrer</button>
           <button class="btn btn-bl" onclick="imprimerListe('sec-gps-table','GPS Trajets')">🖨️ Imprimer la liste</button>
         </div>
+        <div id="sec-gps-stats"></div>
         <div class="tbl-wrap">
-          <table id="sec-gps-table" style="width:100%;border-collapse:collapse">
-            <thead><tr style="-webkit-print-color-adjust:exact;print-color-adjust:exact">
-              <th style="width:30px;position:sticky;top:0;z-index:2"><input type="checkbox" onchange="toutCocherAll('sel-gps-sec',this)"></th>
-              <th style="position:sticky;top:0;z-index:2">N° BL</th>
-              <th style="position:sticky;top:0;z-index:2">Date</th>
-              <th style="position:sticky;top:0;z-index:2">Chauffeur</th>
-              <th style="position:sticky;top:0;z-index:2">Embarquement</th>
-              <th style="position:sticky;top:0;z-index:2">Destination</th>
-              <th style="position:sticky;top:0;z-index:2">Durée</th>
-              <th style="position:sticky;top:0;z-index:2">Carte</th>
+          <table id="sec-gps-table">
+            <thead><tr>
+              <th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-gps-sec',this)"></th>
+              <th>N° BL</th><th>Date</th><th>Chauffeur</th>
+              <th>Embarquement</th><th>Destination</th><th>Durée</th><th>Carte</th>
             </tr></thead>
             <tbody id="sec-gps-body"><tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Cliquez Filtrer</td></tr></tbody>
           </table>
         </div>
       </div>
-  </div>
-</div>
+    </div>
+
 </div>
 
 <!-- ══════════════════════════════════════

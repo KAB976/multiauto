@@ -625,6 +625,7 @@ tr:nth-child(even) td{background:var(--gy)}
           <div class="fg"><span class="fl">Au</span><input class="f-inp" type="date" id="sec-gps-d2"></div>
           <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="sec-gps-chauf"><option value="">Tous</option></select></div>
           <button class="btn btn-or" onclick="secLoadGPS()">🔍 Filtrer</button>
+          <button class="btn btn-gy" onclick="testerGPS()">🔧 Tester</button>
           <button class="btn btn-bl" onclick="imprimerListe('sec-gps-table','GPS Trajets')">🖨️ Imprimer la liste</button>
         </div>
         <div class="tbl-wrap">
@@ -1897,7 +1898,7 @@ function savePermissions(){
 
 function chargerPermissionsUI(){
   var perms=getPermissions();
-  var ids={creerBL:'perm-creer-bl',camionTmp:'perm-camion-tmp',recus:'perm-recus',pdf:'perm-pdf',clients:'perm-clients',vehicules:'perm-vehicules',stats:'perm-stats'};
+  var ids={creerBL:'perm-creer-bl',camionTmp:'perm-camion-tmp',recus:'perm-recus',pdf:'perm-pdf',clients:'perm-clients',vehicules:'perm-vehicules',gps:'perm-gps',stats:'perm-stats'};
   Object.keys(ids).forEach(function(k){var e=G(ids[k]);if(e)e.checked=perms[k]!==false;});
 }
 
@@ -3008,6 +3009,13 @@ function renderRecusTable(recus,tbodyId,isAdmin){
   });
 }
 
+
+function testerGPS(){
+  var url=getScriptUrl();
+  if(!url){showToast('URL non configurée dans Paramètres');return;}
+  var testUrl=url+'?action=getGPS&d1=&d2=&chauffeur=&bon_num=';
+  window.open(testUrl,'_blank');
+}
 
 function secLoadGPS(){
   
@@ -4154,7 +4162,7 @@ function savePermissions(){
 
 function chargerPermissionsUI(){
   var perms=getPermissions();
-  var ids={creerBL:'perm-creer-bl',camionTmp:'perm-camion-tmp',recus:'perm-recus',pdf:'perm-pdf',clients:'perm-clients',vehicules:'perm-vehicules',stats:'perm-stats'};
+  var ids={creerBL:'perm-creer-bl',camionTmp:'perm-camion-tmp',recus:'perm-recus',pdf:'perm-pdf',clients:'perm-clients',vehicules:'perm-vehicules',gps:'perm-gps',stats:'perm-stats'};
   Object.keys(ids).forEach(function(k){var e=G(ids[k]);if(e)e.checked=perms[k]!==false;});
 }
 

@@ -573,16 +573,24 @@ tr:nth-child(even) td{background:var(--gy)}
       <!-- GPS SECRÉTAIRE -->
       <div class="sub-pg" id="sec-gps">
         <div class="sect-title">🗺️ GPS / Trajets</div>
-        <div class="filter-bar">
-          <div class="fg"><span class="fl">Du</span><input class="f-inp" type="date" id="sec-gps-d1"></div>
-          <div class="fg"><span class="fl">Au</span><input class="f-inp" type="date" id="sec-gps-d2"></div>
-          <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="sec-gps-chauf"><option value="">Tous</option></select></div>
-          <button class="btn btn-or" onclick="secLoadGPS()">🔍 Filtrer</button>
-          <button class="btn btn-gy" onclick="testerGPS()">🔧 Tester</button>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:#f9f9f9;border-radius:8px;margin-bottom:10px;align-items:flex-end">
+          <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px">
+            <span style="font-size:11px;font-weight:700;color:#666">Du</span>
+            <input class="f-inp" type="date" id="sec-gps-d1" style="padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px">
+            <span style="font-size:11px;font-weight:700;color:#666">Au</span>
+            <input class="f-inp" type="date" id="sec-gps-d2" style="padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px">
+            <span style="font-size:11px;font-weight:700;color:#666">Chauffeur</span>
+            <select class="f-inp" id="sec-gps-chauf" style="padding:7px;border:1px solid #ddd;border-radius:6px;font-size:13px"><option value="">Tous</option></select>
+          </div>
+          <button class="btn btn-or" onclick="secLoadGPS()" style="padding:8px 16px;white-space:nowrap">🔍 Filtrer</button>
           <button class="btn btn-bl" onclick="imprimerListe('sec-gps-table','GPS Trajets')">🖨️ Imprimer la liste</button>
         </div>
-        <div class="tbl-wrap">
-          <table id="sec-gps-table">
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;border:1px solid #eee">
+          <table id="sec-gps-table" style="width:100%;border-collapse:collapse;min-width:600px">
             <thead><tr>
               <th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-gps-sec',this)"></th>
               <th>N° BL</th><th>Date</th><th>Chauffeur</th>

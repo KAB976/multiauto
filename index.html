@@ -472,6 +472,7 @@ tr:nth-child(even) td{background:var(--gy)}
     <button class="nav-btn" onclick="secTab('clients',this)">👥 Clients</button>
     <button class="nav-btn" onclick="secTab('vehicules',this)">🚗 Véhicules</button>
     <button class="nav-btn" onclick="secTab('stats',this)">📊 Statistiques</button>
+    <button class="nav-btn" id="sec-nav-gps" onclick="secTab('gps',this)">🗺️ GPS</button>
     <button class="nav-btn" id="sec-nav-camion" onclick="secTab('camion-tmp',this)">🔄 Camion temp.</button>
   </div>
   <div class="content">
@@ -592,6 +593,7 @@ tr:nth-child(even) td{background:var(--gy)}
     <button class="nav-btn" onclick="admTab('camion-tmp',this)">🔄 Camion temp.</button>
     <button class="nav-btn" onclick="admTab('camions',this)">🚛 Camions</button>
     <button class="nav-btn" onclick="admTab('vehicules',this)">🚗 Véhicules</button>
+    <button class="nav-btn" onclick="admTab('clients',this)">👥 Clients</button>
     <button class="nav-btn" onclick="admTab('stats',this)">📊 Statistiques</button>
     <button class="nav-btn" onclick="admTab('config',this)">⚙️ Paramètres</button>
   </div>
@@ -613,7 +615,29 @@ tr:nth-child(even) td{background:var(--gy)}
         <div class="card-title"><span class="ico">🧾</span> Derniers reçus</div>
         <div class="tbl-wrap"><table id="adm-rc-table"><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-rc',this)"></th><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-dash-recus"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Chargement...</td></tr></tbody></table></div>
       </div>
-    </div>
+    
+      <!-- GPS SECRÉTAIRE -->
+      <div class="sub-pg" id="sec-gps">
+        <div class="sect-title">🗺️ GPS / Trajets</div>
+        <div class="filter-bar">
+          <div class="fg"><span class="fl">Du</span><input class="f-inp" type="date" id="sec-gps-d1"></div>
+          <div class="fg"><span class="fl">Au</span><input class="f-inp" type="date" id="sec-gps-d2"></div>
+          <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="sec-gps-chauf"><option value="">Tous</option></select></div>
+          <button class="btn btn-or" onclick="secLoadGPS()">🔍 Filtrer</button>
+          <button class="btn btn-bl" onclick="imprimerListe('sec-gps-table','GPS Trajets')">🖨️ Imprimer la liste</button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="sec-gps-table">
+            <thead><tr>
+              <th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-gps-sec',this)"></th>
+              <th>N° BL</th><th>Date</th><th>Chauffeur</th>
+              <th>Embarquement</th><th>Destination</th><th>Durée</th><th>Carte</th>
+            </tr></thead>
+            <tbody id="sec-gps-body"><tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Cliquez Filtrer</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+</div>
 
     <!-- BL & REÇUS -->
     <div class="sub-pg" style="display:none" id="adm-bl">
@@ -753,7 +777,25 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
     <!-- STATISTIQUES -->
-    <div class="sub-pg" style="display:none" id="adm-stats">
+          <!-- CLIENTS ADMIN -->
+      <div class="sub-pg" id="adm-clients">
+        <div class="sect-title">👥 Gestion des Clients</div>
+        <div class="filter-bar">
+          <input class="f-inp" type="text" id="adm-cli-search" placeholder="Rechercher un client..." oninput="admFiltrerClients()">
+          <button class="btn btn-gr" onclick="admLoadClients()">🔄 Actualiser</button>
+          <button class="btn btn-bl" onclick="imprimerListe('adm-cli-table','Liste Clients')">🖨️ Imprimer</button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="adm-cli-table">
+            <thead><tr>
+              <th>Nom</th><th>Téléphone</th><th>Véhicule</th><th>Immatriculation</th><th>Nb BL</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="adm-cli-body"><tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mt)">Cliquez Actualiser</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+<div class="sub-pg" style="display:none" id="adm-stats">
       <div class="card">
         <div class="card-title"><span class="ico">📊</span> Statistiques complètes</div>
         <div class="filtres">
@@ -1181,21 +1223,17 @@ function toutCocherRC(btn){toutCocher('sel-rc',btn);}
 
 function imprimerListe(tableId, titre){
   var table=G(tableId);
-  if(!table){showToast('Tableau introuvable');return;}
+  if(!table){showToast('Tableau introuvable: '+tableId);return;}
   var rows=Array.from(table.querySelectorAll('tbody tr'));
-  // Filtrer les lignes vraiment visibles (pas cachées)
-  rows=rows.filter(function(tr){
-    return tr.style.display!=='none';
-  });
+  rows=rows.filter(function(tr){return tr.style.display!=='none';});
   if(!rows.length){showToast('Aucune donnee a imprimer');return;}
 
-  // Construire l'entête sans checkbox ni Actions
+  // Construire entête
   var thead=table.querySelector('thead');
   var theadHtml='<thead><tr>';
   if(thead){
-    var ths=Array.from(thead.querySelectorAll('th'));
-    ths.forEach(function(th,i){
-      if(i===0) return; // checkbox
+    Array.from(thead.querySelectorAll('th')).forEach(function(th,i){
+      if(i===0) return;
       var txt=th.textContent.replace(/[↑↓]/g,'').trim();
       if(txt==='Actions'||txt==='') return;
       theadHtml+='<th>'+txt+'</th>';
@@ -1203,21 +1241,23 @@ function imprimerListe(tableId, titre){
   }
   theadHtml+='</tr></thead>';
 
-  // Construire le corps - lire TOUTES les lignes visibles du DOM
+  // Construire corps - exactement ce qui est affiché
   var tbodyHtml='<tbody>';
+  var count=0;
   rows.forEach(function(tr){
     var cells=Array.from(tr.querySelectorAll('td'));
     if(!cells.length) return;
+    count++;
     tbodyHtml+='<tr>';
     cells.forEach(function(td,i){
-      if(i===0) return; // checkbox
-      if(i===cells.length-1) return; // Actions
-      // Prendre le texte sans les boutons
+      if(i===0) return;
+      if(i===cells.length-1) return;
       var clone=td.cloneNode(true);
-      // Supprimer les boutons du clone
-      Array.from(clone.querySelectorAll('button,input')).forEach(function(el){el.remove();});
-      var txt=clone.textContent.trim();
-      tbodyHtml+='<td>'+txt+'</td>';
+      Array.from(clone.querySelectorAll('button,input,a')).forEach(function(el){
+        if(el.tagName==='A') el.outerHTML=el.textContent;
+        else el.remove();
+      });
+      tbodyHtml+='<td>'+clone.textContent.trim()+'</td>';
     });
     tbodyHtml+='</tr>';
   });
@@ -1225,42 +1265,55 @@ function imprimerListe(tableId, titre){
 
   var cfg=getConfig();
   var nom=cfg.nom||'Multi Auto Center';
-  var nbLignes=rows.length;
 
-  var html='<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+titre+'</title>'
-    +'<style>'
-    +'*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
-    +'body{font-family:Arial,sans-serif;margin:0;padding:12px}'
-    +'@page{margin:8mm;size:A4 landscape}'
-    +'@media print{.noprint{display:none!important}}'
-    +'.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #C0392B}'
-    +'.hdr h2{font-size:14px;color:#C0392B;margin:0}'
-    +'.hdr span{font-size:10px;color:#666}'
+  // Créer div d'impression temporaire dans la page
+  var old=G('print-overlay');
+  if(old) document.body.removeChild(old);
+
+  var overlay=document.createElement('div');
+  overlay.id='print-overlay';
+  overlay.innerHTML=
+    '<style id="print-style">'
+    +'@media print{'
+    +'  body > *:not(#print-overlay){display:none!important}'
+    +'  #print-overlay{display:block!important;position:static!important}'
+    +'  .noprint-in-overlay{display:none!important}'
+    +'  @page{margin:8mm;size:A4 landscape}'
+    +'  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    +'}'
+    +'#print-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999;padding:16px;box-sizing:border-box;overflow:auto;font-family:Arial,sans-serif}'
+    +'.p-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #C0392B}'
+    +'.p-hdr h2{font-size:14px;color:#C0392B;margin:0}'
+    +'.p-hdr span{font-size:10px;color:#666}'
     +'table{width:100%;border-collapse:collapse}'
     +'thead tr{-webkit-print-color-adjust:exact!important;background:#C0392B!important}'
     +'thead th{color:#fff!important;padding:6px 8px;text-align:left;font-weight:700;font-size:10px}'
     +'tbody tr:nth-child(even){-webkit-print-color-adjust:exact!important;background:#f9f9f9!important}'
-    +'tbody td{padding:5px 8px;border-bottom:1px solid #eee;font-size:10px;color:#1A1A1A}'
-    +'.ftr{margin-top:8px;padding-top:6px;border-top:1px solid #C0392B;display:flex;justify-content:space-between;font-size:9px;color:#888}'
-    +'</style></head><body>'
-    +'<div class="hdr">'
-    +'<h2>'+titre+' <span style="font-size:11px;color:#666">('+nbLignes+' ligne'+(nbLignes>1?'s':'')+')</span></h2>'
-    +'<span>'+nom+' — '+fmtDate(new Date())+'</span>'
+    +'tbody td{padding:5px 8px;border-bottom:1px solid #eee;font-size:10px}'
+    +'</style>'
+    +'<div class="p-hdr noprint-in-overlay">'
+    +'<h2>'+titre+' ('+count+' ligne'+(count>1?'s':'')+')</h2>'
+    +'<div>'
+    +'<button onclick="window.print()" style="background:#C0392B;color:#fff;border:none;padding:8px 14px;border-radius:5px;cursor:pointer;font-weight:700;margin-right:8px">Imprimer</button>'
+    +'<button onclick="fermerImpression()" style="background:#555;color:#fff;border:none;padding:8px 14px;border-radius:5px;cursor:pointer">Fermer</button>'
     +'</div>'
-    +'<table>'+theadHtml+tbodyHtml+'</table>'
-    +'<div class="ftr"><span>'+nom+'</span><span>'+fmtDate(new Date())+'</span></div>'
-    +'</body></html>';
+    +'</div>'
+    +'<div class="p-hdr" style="display:none" id="print-hdr-hidden">'
+    +'<h2>'+titre+' — '+nom+'</h2><span>'+fmtDate(new Date())+'</span>'
+    +'</div>'
+    +'<table>'+theadHtml+tbodyHtml+'</table>';
 
-  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  var url=URL.createObjectURL(blob);
-  var win=window.open(url,'_blank');
-  if(win){
-    win.onload=function(){setTimeout(function(){win.print();},600);};
-    setTimeout(function(){URL.revokeObjectURL(url);},30000);
-  } else {
-    showToast('Autorisez les popups pour imprimer');
-  }
+  document.body.appendChild(overlay);
+  overlay.style.display='block';
 }
+
+function fermerImpression(){
+  var el=G('print-overlay');
+  if(el) document.body.removeChild(el);
+  var st=G('print-style');
+  if(st) st.remove();
+}
+
 
 
 
@@ -1946,6 +1999,7 @@ function admTab(id,btn){
   btn.classList.add('on');
   if(id==='camion-tmp') admInitCamionTmp();
   if(id==='dashboard') admLoadDashboard();
+  if(id==='clients') admLoadClients();
 }
 
 function admInitCamionTmp(){
@@ -2545,7 +2599,7 @@ document.addEventListener('DOMContentLoaded',function(){
 // ══════════════════════════════════════════════════════════
 function entrerSecretaire(){
   showPg('pg-secretaire');
-  chargerSelectsChauffeurs(['sec-bl-chauf','sec-rc-chauf','sec-st-chauf']);
+  chargerSelectsChauffeurs(['sec-bl-chauf','sec-rc-chauf','sec-st-chauf','sec-gps-chauf']);
   chargerClientsTable();
   chargerMarquesListSec();
   secInitCamionTmp();
@@ -2824,6 +2878,56 @@ function renderRecusTable(recus,tbodyId,isAdmin){
 }
 
 
+function secLoadGPS(){
+  loader(true,'Chargement GPS...');
+  apiCall({
+    action:'getGPS',
+    d1:G('sec-gps-d1').value||'',
+    d2:G('sec-gps-d2').value||'',
+    chauffeur:G('sec-gps-chauf').value||''
+  },function(data,err){
+    loader(false);
+    var tb=G('sec-gps-body');
+    if(err||!data){
+      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--re)">Erreur de chargement</td></tr>';
+      return;
+    }
+    var gps=data.gps||[];
+    var d1=G('sec-gps-d1').value||'';
+    var d2=G('sec-gps-d2').value||'';
+    var chauf=G('sec-gps-chauf').value||'';
+    if(d1||d2) gps=filtrerParDate(gps,'date_bl',d1,d2);
+    if(chauf) gps=gps.filter(function(g){return g.chauffeur_nom===chauf;});
+    if(!gps.length){
+      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Aucune donnée GPS.</td></tr>';
+      return;
+    }
+    gps.sort(function(a,b){
+      var da=parseLocalDate(formatDateFR(String(a.date_bl||'')));
+      var db=parseLocalDate(formatDateFR(String(b.date_bl||'')));
+      return da&&db?db-da:0;
+    });
+    var gpsSecStore={};
+    tb.innerHTML=gps.map(function(g,i){
+      var dateFR=formatDateFR(String(g.date_bl||''));
+      var carte=(g.gps_emb_lat&&g.gps_emb_lng&&g.gps_dest_lat&&g.gps_dest_lng)
+        ?'<a class="tbtn tbtn-bl" href="https://www.google.com/maps/dir/'+g.gps_emb_lat+','+g.gps_emb_lng+'/'+g.gps_dest_lat+','+g.gps_dest_lng+'" target="_blank">🗺️</a>':'—';
+      var gid='sec_g'+i;
+      gpsSecStore[gid]=g;
+      return '<tr>'
+        +'<td><input type="checkbox" class="sel-gps-sec" data-id="'+gid+'"></td>'
+        +'<td style="font-family:monospace;font-weight:700">'+g.bon_num+'</td>'
+        +'<td>'+dateFR+'</td>'
+        +'<td>'+g.chauffeur_nom+'</td>'
+        +'<td><strong>'+(g.lieu_embarquement||'—')+'</strong></td>'
+        +'<td><strong>'+(g.destination||'—')+'</strong></td>'
+        +'<td>'+(g.duree_min?g.duree_min+' min':'—')+'</td>'
+        +'<td>'+carte+'</td>'
+        +'</tr>';
+    }).join('');
+  });
+}
+
 function secLoadStats(){
   loader(true,'Calcul...');
   apiCall({action:'getStats',d1:G('sec-st-d1').value||'',d2:G('sec-st-d2').value||'',chauffeur:G('sec-st-chauf').value||''},function(data,err){
@@ -3053,6 +3157,98 @@ function admLoadGPS(){
         +'<td>'+carte+'</td>'
         +'</tr>';
     }).join('');
+  });
+}
+
+function admLoadClients(){
+  loader(true,'Chargement clients...');
+  apiCall({action:'getBL',d1:'',d2:'',chauffeur:''},function(data,err){
+    loader(false);
+    if(err||!data){showToast('Erreur chargement');return;}
+    var bls=data.bls||[];
+    // Construire liste clients unique depuis les BL
+    var clientMap={};
+    bls.forEach(function(b){
+      if(!b.nom_client) return;
+      var key=b.nom_client.toLowerCase().trim();
+      if(!clientMap[key]){
+        clientMap[key]={
+          nom:b.nom_client,
+          tel:b.tel_client||'—',
+          vehicule:b.marque+' '+b.modele,
+          immat:b.immatriculation,
+          count:0
+        };
+      }
+      clientMap[key].count++;
+      // Mise à jour véhicule avec le plus récent
+      clientMap[key].vehicule=b.marque+' '+b.modele;
+      clientMap[key].immat=b.immatriculation;
+      clientMap[key].tel=b.tel_client||clientMap[key].tel;
+    });
+    window.admClientsData=Object.values(clientMap).sort(function(a,b){
+      return a.nom.localeCompare(b.nom,'fr');
+    });
+    admAfficherClients(window.admClientsData);
+  });
+}
+
+function admFiltrerClients(){
+  if(!window.admClientsData) return;
+  var q=(G('adm-cli-search').value||'').toLowerCase().trim();
+  var filtered=q?window.admClientsData.filter(function(c){
+    return c.nom.toLowerCase().indexOf(q)>=0||c.tel.indexOf(q)>=0||c.immat.toLowerCase().indexOf(q)>=0;
+  }):window.admClientsData;
+  admAfficherClients(filtered);
+}
+
+function admAfficherClients(clients){
+  var tb=G('adm-cli-body');
+  if(!clients.length){
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--mt)">Aucun client trouvé</td></tr>';
+    return;
+  }
+  tb.innerHTML=clients.map(function(c){
+    return '<tr>'
+      +'<td style="font-weight:700">'+c.nom+'</td>'
+      +'<td>'+c.tel+'</td>'
+      +'<td>'+c.vehicule+'</td>'
+      +'<td style="font-family:monospace">'+c.immat+'</td>'
+      +'<td style="text-align:center"><strong>'+c.count+'</strong></td>'
+      +'<td><button class="tbtn tbtn-bl" onclick="admVoirHistoriqueClient(this.dataset.nom)" data-nom="'+c.nom+'" style="font-size:14px;padding:5px 10px">📋 Historique</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function admVoirHistoriqueClient(el){
+  var nomClient=typeof el==='string'?el:el.dataset.nom;
+  loader(true,'Chargement...');
+  apiCall({action:'getBL',d1:'',d2:'',chauffeur:''},function(data,err){
+    loader(false);
+    if(err||!data) return;
+    var bls=(data.bls||[]).filter(function(b){
+      return b.nom_client===nomClient;
+    });
+    if(!bls.length){showToast('Aucun BL pour '+nomClient);return;}
+    // Afficher dans un modal simple
+    var html='<div style="padding:16px;font-family:Arial,sans-serif">';
+    html+='<h3 style="color:#C0392B;margin-bottom:12px">Historique — '+nomClient+'</h3>';
+    html+='<table style="width:100%;border-collapse:collapse">';
+    html+='<thead><tr style="background:#C0392B;color:#fff"><th style="padding:6px 8px">N° BL</th><th style="padding:6px 8px">Date</th><th style="padding:6px 8px">Trajet</th><th style="padding:6px 8px">Montant</th></tr></thead><tbody>';
+    bls.sort(function(a,b){
+      return parseDateHeure(b.date_bl,b.heure_bl)-parseDateHeure(a.date_bl,a.heure_bl);
+    }).forEach(function(b){
+      html+='<tr style="border-bottom:1px solid #eee">'
+        +'<td style="padding:5px 8px;font-family:monospace;font-weight:700">'+b.bon_num+'</td>'
+        +'<td style="padding:5px 8px">'+formatDateFR(b.date_bl)+'</td>'
+        +'<td style="padding:5px 8px">'+b.lieu_embarquement+' → '+b.destination+'</td>'
+        +'<td style="padding:5px 8px;color:#C0392B;font-weight:700">'+(b.montant_especes?parseFloat(b.montant_especes).toFixed(2)+' €':'—')+'</td>'
+        +'</tr>';
+    });
+    html+='</tbody></table></div>';
+    G('modal-pdf-content').innerHTML=html;
+    G('modal-pdf-title').textContent='Historique — '+nomClient+' ('+bls.length+' BL)';
+    openModal('modal-pdf');
   });
 }
 

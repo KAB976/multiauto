@@ -3009,28 +3009,39 @@ function renderRecusTable(recus,tbodyId,isAdmin){
 
 
 function secLoadGPS(){
-  loader(true,'Chargement GPS...');
+  var tb=G('sec-gps-body');
+  tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px">⏳ Chargement...</td></tr>';
+  
+  // Timeout de sécurité
+  var timeout=setTimeout(function(){
+    loader(false);
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--re)">⚠️ Délai dépassé - Vérifiez votre connexion et l URL Apps Script dans Paramètres</td></tr>';
+  },15000);
+
   apiCall({
     action:'getGPS',
     d1:G('sec-gps-d1').value||'',
     d2:G('sec-gps-d2').value||'',
     chauffeur:G('sec-gps-chauf').value||''
   },function(data,err){
+    clearTimeout(timeout);
     loader(false);
-    var tb=G('sec-gps-body');
-    if(err||!data){
-      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--re)">Erreur: '+(err||'Connexion échouée')+'</td></tr>';
+    if(err){
+      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--re)">❌ Erreur: '+err+'</td></tr>';
+      return;
+    }
+    if(!data){
+      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--re)">❌ Pas de réponse du serveur</td></tr>';
       return;
     }
     var gps=data.gps||[];
-    // Filtre côté client
     var d1=G('sec-gps-d1').value||'';
     var d2=G('sec-gps-d2').value||'';
     var chauf=G('sec-gps-chauf').value||'';
     if(d1||d2) gps=filtrerParDate(gps,'date_bl',d1,d2);
     if(chauf) gps=gps.filter(function(g){return g.chauffeur_nom===chauf;});
     if(!gps.length){
-      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Aucune donnée GPS trouvée.<br><small>Vérifiez que les chauffeurs ont bien cliqué Je pars et Je suis arrivé</small></td></tr>';
+      tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">📭 Aucune donnée GPS.<br><small>Les chauffeurs doivent cliquer Je pars et Je suis arrivé</small></td></tr>';
       return;
     }
     gps.sort(function(a,b){
@@ -3038,15 +3049,12 @@ function secLoadGPS(){
       var db=parseLocalDate(formatDateFR(String(b.date_bl||'')));
       return da&&db?db-da:0;
     });
-    var gpsSecStore={};
     tb.innerHTML=gps.map(function(g,i){
       var dateFR=formatDateFR(String(g.date_bl||''));
       var carte=(g.gps_emb_lat&&g.gps_emb_lng&&g.gps_dest_lat&&g.gps_dest_lng)
         ?'<a class="tbtn tbtn-bl" href="https://www.google.com/maps/dir/'+g.gps_emb_lat+','+g.gps_emb_lng+'/'+g.gps_dest_lat+','+g.gps_dest_lng+'" target="_blank">🗺️</a>':'—';
-      var gid='sec_g'+i;
-      gpsSecStore[gid]=g;
       return '<tr>'
-        +'<td><input type="checkbox" class="sel-gps-sec" data-id="'+gid+'"></td>'
+        +'<td><input type="checkbox" class="sel-gps-sec" data-id="sec_g'+i+'"></td>'
         +'<td style="font-family:monospace;font-weight:700">'+g.bon_num+'</td>'
         +'<td>'+dateFR+'</td>'
         +'<td>'+g.chauffeur_nom+'</td>'
@@ -3058,6 +3066,7 @@ function secLoadGPS(){
     }).join('');
   });
 }
+
 
 
 function secLoadStats(){

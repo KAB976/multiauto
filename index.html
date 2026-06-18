@@ -274,7 +274,7 @@ tr:nth-child(even) td{background:var(--gy)}
 .gps-map-link:hover{text-decoration:underline}
 
 /* ── UPLOAD LOGO HEADER ── */
-#logo-gauche-prev, #logo-droite-prev{max-width:100px;max-height:40px;object-fit:contain;display:none;margin-bottom:4px}
+#logo-gauche-prev, #logo-droite-prev{max-width:180px;max-height:80px;object-fit:contain;display:none;margin-bottom:8px;border:1px solid #eee;border-radius:6px;padding:4px;background:#f9f9f9}
 </style>
 </head>
 <body>
@@ -1864,8 +1864,8 @@ function chargerLogosUI(){
   var trk2=G('ch-truck'); if(trk2&&lG){trk2.src=lG;trk2.style.display='block'}
   // Logos config
   var lGp=G('logo-gauche-prev'),lDp=G('logo-droite-prev');
-  if(lGp&&lG){lGp.src=lG;lGp.style.display='block'}
-  if(lDp&&lD){lDp.src=lD;lDp.style.display='block'}
+  if(lGp){if(lG){lGp.src=lG;lGp.style.display='block';}else{lGp.src='';lGp.style.display='none';}}
+  if(lDp){if(lD){lDp.src=lD;lDp.style.display='block';}else{lDp.src='';lDp.style.display='none';}}
   // Script URL
   if(cfg.script){lsSet('cfg_script',cfg.script)}
   // Config fields

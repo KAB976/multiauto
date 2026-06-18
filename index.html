@@ -910,17 +910,19 @@ div class="sub-pg" style="display:none" id="adm-stats">
             <label class="fl">Logo gauche (camion)</label>
             <div class="logo-upload" id="logo-g-zone">
               <img id="logo-gauche-prev" src="" alt="Logo gauche">
-              <p>Cliquer pour choisir le logo gauche</p>
+              <p>Cliquer pour choisir le logo gauche (max 500Ko)</p>
               <input type="file" accept="image/*" onchange="uploadLogoGauche(event)">
             </div>
+            <button class="btn btn-re" onclick="supprimerLogo('G')" style="margin-top:6px;font-size:12px">🗑️ Supprimer logo</button>
           </div>
           <div>
             <label class="fl">Logo droite (Multi Auto)</label>
             <div class="logo-upload" id="logo-d-zone">
               <img id="logo-droite-prev" src="" alt="Logo droite">
-              <p>Cliquer pour choisir le logo droite</p>
+              <p>Cliquer pour choisir le logo droite (max 500Ko)</p>
               <input type="file" accept="image/*" onchange="uploadLogoDroite(event)">
             </div>
+            <button class="btn btn-re" onclick="supprimerLogo('D')" style="margin-top:6px;font-size:12px">🗑️ Supprimer logo</button>
           </div>
         </div>
         <div>
@@ -3668,23 +3670,61 @@ function purgerPhotos(){
 }
 
 // PARAMÈTRES
+function urgenceViderLogos(){
+  if(!confirm('Vider tous les logos pour débloquer ? (les autres données restent)')) return;
+  var cfg=getConfig();
+  cfg.logoG=''; cfg.logoD='';
+  lsSet('app_config',cfg);
+  lsRemove('logo_b64_G');
+  lsRemove('logo_b64_D');
+  showToast('Logos vidés - rechargez la page');
+  setTimeout(function(){location.reload();},1500);
+}
+
+function supprimerLogo(side){
+  if(!confirm('Supprimer ce logo ?')) return;
+  var cfg=getConfig();
+  if(side==='G'){
+    cfg.logoG='';
+    var prev=G('logo-gauche-prev');
+    if(prev){prev.src='';prev.style.display='none';}
+  } else {
+    cfg.logoD='';
+    var prev=G('logo-droite-prev');
+    if(prev){prev.src='';prev.style.display='none';}
+  }
+  lsSet('app_config',cfg);
+  chargerLogosUI();
+  showToast('✅ Logo supprimé');
+}
+
 function uploadLogoGauche(e){
   var file=e.target.files[0]; if(!file) return;
+  if(file.size>500000){
+    showToast('❌ Logo trop lourd ('+Math.round(file.size/1024)+'Ko). Maximum 500Ko. Compressez sur tinypng.com');
+    return;
+  }
   var reader=new FileReader();
   reader.onload=function(ev){
     var data=ev.target.result;
-    var cfg=getConfig(); cfg.logoG=data; lsSet('app_config',cfg);
-    // Sauvegarder logo dans Sheets séparément
-    var url=getScriptUrl();
-    apiPost({action:'saveLogo',side:'G',data:data});
-    G('logo-gauche-prev').src=data; G('logo-gauche-prev').style.display='block';
-    chargerLogosUI(); showToast('✅ Logo gauche enregistré');
+    try{
+      var cfg=getConfig(); cfg.logoG=data; lsSet('app_config',cfg);
+      apiPost({action:'saveLogo',side:'G',data:data});
+      G('logo-gauche-prev').src=data; G('logo-gauche-prev').style.display='block';
+      chargerLogosUI(); showToast('✅ Logo gauche enregistré');
+    }catch(err){
+      showToast('❌ Erreur: logo trop lourd pour la mémoire');
+    }
   };
   reader.readAsDataURL(file);
 }
 
 function uploadLogoDroite(e){
   var file=e.target.files[0]; if(!file) return;
+  if(file.size>500000){
+    showToast('❌ Logo trop lourd ('+Math.round(file.size/1024)+'Ko). Maximum 500Ko. Compressez sur tinypng.com');
+    return;
+  }
   var reader=new FileReader();
   reader.onload=function(ev){
     var data=ev.target.result;

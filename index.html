@@ -1883,6 +1883,7 @@ function savePermissions(){
     pdf:G('perm-pdf').checked,
     clients:G('perm-clients').checked,
     vehicules:G('perm-vehicules').checked,
+    gps:G('perm-gps')?G('perm-gps').checked:true,
     stats:G('perm-stats').checked
   };
   lsSet('sec_permissions',perms);
@@ -2789,7 +2790,7 @@ function secTab(id,btn){
   }
   btn.classList.add('on');
   if(id==='camion-tmp') secInitCamionTmp();
-  if(id==='gps') secLoadGPS();
+  if(id==='gps') setTimeout(function(){secLoadGPS();},200);
 }
 
 function chargerSelectsChauffeurs(ids){
@@ -3009,9 +3010,8 @@ function renderRecusTable(recus,tbodyId,isAdmin){
 
 
 function secLoadGPS(){
-  loader(true,'Chargement GPS...');
+  
   apiCall({action:'getGPS',d1:G('sec-gps-d1').value||'',d2:G('sec-gps-d2').value||'',chauffeur:G('sec-gps-chauf').value||'',bon_num:''},function(data,err){
-    loader(false);
     var tb=G('sec-gps-body');
     if(err||!data){
       tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--re)">Erreur de chargement</td></tr>';
@@ -4140,6 +4140,7 @@ function savePermissions(){
     pdf:G('perm-pdf').checked,
     clients:G('perm-clients').checked,
     vehicules:G('perm-vehicules').checked,
+    gps:G('perm-gps')?G('perm-gps').checked:true,
     stats:G('perm-stats').checked
   };
   lsSet('sec_permissions',perms);

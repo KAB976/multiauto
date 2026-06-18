@@ -569,6 +569,30 @@ tr:nth-child(even) td{background:var(--gy)}
     </div>
 
   </div>
+
+      <!-- GPS SECRÉTAIRE -->
+      <div class="sub-pg" id="sec-gps">
+        <div class="sect-title">🗺️ GPS / Trajets</div>
+        <div class="filter-bar">
+          <div class="fg"><span class="fl">Du</span><input class="f-inp" type="date" id="sec-gps-d1"></div>
+          <div class="fg"><span class="fl">Au</span><input class="f-inp" type="date" id="sec-gps-d2"></div>
+          <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="sec-gps-chauf"><option value="">Tous</option></select></div>
+          <button class="btn btn-or" onclick="secLoadGPS()">🔍 Filtrer</button>
+          <button class="btn btn-gy" onclick="testerGPS()">🔧 Tester</button>
+          <button class="btn btn-bl" onclick="imprimerListe('sec-gps-table','GPS Trajets')">🖨️ Imprimer la liste</button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="sec-gps-table">
+            <thead><tr>
+              <th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-gps-sec',this)"></th>
+              <th>N° BL</th><th>Date</th><th>Chauffeur</th>
+              <th>Embarquement</th><th>Destination</th><th>Durée</th><th>Carte</th>
+            </tr></thead>
+            <tbody id="sec-gps-body"><tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Cliquez Filtrer</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+</div>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -617,29 +641,6 @@ tr:nth-child(even) td{background:var(--gy)}
         <div class="tbl-wrap"><table id="adm-dash-rc-table"><thead><tr><th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-rc',this)"></th><th>N° Reçu</th><th>Date</th><th>Chauffeur</th><th>Client</th><th>Montant</th><th>BL lié</th><th>Actions</th></tr></thead><tbody id="adm-dash-recus"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--mt)">Chargement...</td></tr></tbody></table></div>
       </div>
     
-      <!-- GPS SECRÉTAIRE -->
-      <div class="sub-pg" id="sec-gps">
-        <div class="sect-title">🗺️ GPS / Trajets</div>
-        <div class="filter-bar">
-          <div class="fg"><span class="fl">Du</span><input class="f-inp" type="date" id="sec-gps-d1"></div>
-          <div class="fg"><span class="fl">Au</span><input class="f-inp" type="date" id="sec-gps-d2"></div>
-          <div class="fg"><span class="fl">Chauffeur</span><select class="f-inp" id="sec-gps-chauf"><option value="">Tous</option></select></div>
-          <button class="btn btn-or" onclick="secLoadGPS()">🔍 Filtrer</button>
-          <button class="btn btn-gy" onclick="testerGPS()">🔧 Tester</button>
-          <button class="btn btn-bl" onclick="imprimerListe('sec-gps-table','GPS Trajets')">🖨️ Imprimer la liste</button>
-        </div>
-        <div class="tbl-wrap">
-          <table id="sec-gps-table">
-            <thead><tr>
-              <th style="width:30px"><input type="checkbox" onchange="toutCocherAll('sel-gps-sec',this)"></th>
-              <th>N° BL</th><th>Date</th><th>Chauffeur</th>
-              <th>Embarquement</th><th>Destination</th><th>Durée</th><th>Carte</th>
-            </tr></thead>
-            <tbody id="sec-gps-body"><tr><td colspan="8" style="text-align:center;padding:20px;color:var(--mt)">Cliquez Filtrer</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-</div>
 
     <!-- BL & REÇUS -->
     <div class="sub-pg" style="display:none" id="adm-bl">

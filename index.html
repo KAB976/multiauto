@@ -588,12 +588,12 @@ tr:nth-child(even) td{background:var(--gy)}
   <div class="nav-tabs">
     <button class="nav-btn on" onclick="admTab('dashboard',this)">🏠 Tableau de bord</button>
     <button class="nav-btn" onclick="admTab('bl',this)">📋 BL & Reçus</button>
+    <button class="nav-btn" onclick="admTab('clients',this)">👥 Clients</button>
     <button class="nav-btn" onclick="admTab('gps',this)">🗺️ GPS / Trajets</button>
     <button class="nav-btn" onclick="admTab('chauffeurs',this)">👨‍✈️ Chauffeurs</button>
     <button class="nav-btn" onclick="admTab('camion-tmp',this)">🔄 Camion temp.</button>
     <button class="nav-btn" onclick="admTab('camions',this)">🚛 Camions</button>
     <button class="nav-btn" onclick="admTab('vehicules',this)">🚗 Véhicules</button>
-    <button class="nav-btn" onclick="admTab('clients',this)">👥 Clients</button>
     <button class="nav-btn" onclick="admTab('stats',this)">📊 Statistiques</button>
     <button class="nav-btn" onclick="admTab('config',this)">⚙️ Paramètres</button>
   </div>
@@ -3547,7 +3547,8 @@ function telechargerDoc(data,type){
     loader(true,'Generation PDF...');
     var el=document.createElement('div');
     el.setAttribute('id','pdf-gen-container');
-    el.style.cssText='position:fixed;left:0;top:0;width:794px;height:auto;background:#fff;z-index:-9999;opacity:0;pointer-events:none';
+    el.style.cssText='position:fixed;left:0;top:0;width:794px;background:#fff;z-index:9998;visibility:visible';
+    document.body.style.overflow='hidden';
     el.innerHTML=html;
     document.body.appendChild(el);
     setTimeout(function(){
@@ -3578,6 +3579,7 @@ function telechargerDoc(data,type){
         loader(false);
         showToast('PDF telecharge: '+nom+'.pdf');
       }).catch(function(e){
+        document.body.style.overflow='';
         var old=document.getElementById('pdf-gen-container');
         if(old) document.body.removeChild(old);
         loader(false);
@@ -3788,7 +3790,7 @@ function renderBLHTML(b,cfg){
   h+='<div style="position:relative;z-index:1;display:flex;gap:12px;align-items:flex-start;flex:1">';
   h+='<div style="flex:1">';
   h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:4px 10px;font-size:10px;font-weight:700;text-transform:uppercase;border-radius:4px 4px 0 0">Photo du véhicule</div>';
-  h+=(photoSrc?'<div style="text-align:center;padding:4px;border:1px solid #E0E0E0;border-top:none;border-radius:0 0 4px 4px"><img src="'+photoSrc+'" style="max-height:140px;max-width:100%;object-fit:contain;image-orientation:from-image" alt="Photo"></div>':'<div style="padding:6px;text-align:center;color:#CCC;font-size:11px;border:1px solid #E0E0E0;border-top:none;border-radius:0 0 4px 4px">Aucune photo</div>');
+  h+=(photoSrc?'<div style="text-align:center;padding:4px;border:1px solid #E0E0E0;border-top:none;border-radius:0 0 4px 4px"><img src="'+photoSrc+'" style="max-height:170px;max-width:100%;object-fit:contain;image-orientation:from-image" alt="Photo"></div>':'<div style="padding:6px;text-align:center;color:#CCC;font-size:11px;border:1px solid #E0E0E0;border-top:none;border-radius:0 0 4px 4px">Aucune photo</div>');
   h+='</div>';
   h+='<div style="width:150px;flex-shrink:0">';
   h+='<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#C0392B;color:#fff;padding:4px 10px;font-size:10px;font-weight:700;text-transform:uppercase;border-radius:4px 4px 0 0">Signature</div>';
@@ -3796,7 +3798,7 @@ function renderBLHTML(b,cfg){
   h+='</div>';
   h+='</div>';
   h+='</div>';
-  h+='<div style="border-top:2px solid #C0392B;padding:8px 16px;display:flex;align-items:center;flex-shrink:0">';
+  h+='<div style="border-top:2px solid #C0392B;padding:8px 16px;display:flex;align-items:center;flex-shrink:0;margin-top:16px">';
   h+='<div style="flex:1;text-align:center">';
   h+='<div style="font-size:12px;font-weight:900;color:#1A1A1A">'+nom+'</div>';
   h+='<div style="font-size:10px;color:#D4A800;margin-top:1px">'+adresse+(contact?' • '+contact:'')+'</div>';

@@ -280,7 +280,7 @@ tr:nth-child(even) td{background:var(--gy)}
 <body>
 
 <div class="auteur">Auteur : KAB</div>
-<div id="loader"><div class="spin"></div><div class="spin-txt" id="loader-txt">Chargement...</div></div>
+<div id="loader"><div class="spin"></div><div class="spin-txt" id="loader-txt">Chargement...</div><button onclick="loader(false)" style="margin-top:16px;background:#fff;color:#333;border:none;padding:8px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">✕ Annuler</button></div><div class="spin-txt" id="loader-txt">Chargement...</div></div>
 <div id="toast"></div>
 
 <!-- ══════════════════════════════════════
@@ -1835,13 +1835,14 @@ var mblRole = '';
 var dashTimer=null;
 function admTab(id,btn){
   try{
-    // Fermer loader si ouvert par erreur precedente
     loader(false);
     document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
       p.classList.remove('on');
       p.style.display='none';
     });
-    document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
+    document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){
+      b.classList.remove('on');
+    });
     var el=G('adm-'+id);
     if(el){el.style.display='block';el.classList.add('on');}
     if(btn) btn.classList.add('on');
@@ -1850,7 +1851,6 @@ function admTab(id,btn){
     if(id==='clients') admLoadClients();
   }catch(e){
     loader(false);
-    console.error('admTab erreur:',e);
     showToast('Erreur: '+e.message);
   }
 }
@@ -2837,17 +2837,16 @@ function saveMarque(){
 // ══════════════════════════════════════════════════════════
 function entrerAdmin(){
   showPg('pg-admin');
-  // Fonctions légères en premier
   chargerSelectsChauffeurs(['adm-bl-chauf','adm-rc-chauf','adm-gps-chauf','adm-st-chauf']);
   chargerChauffeursAdmin();
   chargerCamionsAdmin();
   chargerMarquesListAdmin();
   chargerCompteurs();
-  // Fonctions lourdes en différé pour ne pas bloquer l'interface
   setTimeout(function(){chargerLogosUI();},100);
-  setTimeout(function(){admLoadDashboard();},200);
   setTimeout(initCamionTmpSelects,500);
   setTimeout(chargerPermissionsUI,300);
+  // Dashboard chargé après tout le reste
+  setTimeout(function(){admLoadDashboard();},1000);
 }
 
 

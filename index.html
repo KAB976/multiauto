@@ -3867,12 +3867,6 @@ function imprimerDoc(data,type){
   });
 }
 
-function telechargerDoc(data,type){
-  var cfg=getConfig();
-  var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
-  var nom=type==='bl'?data.bon_num:data.recu_num;
-  ouvrirDocumentPrint(html,nom);
-}
 
 
 function ouvrirDocumentPrint(html,nom){
@@ -4428,28 +4422,6 @@ function assignerCamionTmp(){
   setTimeout(function(){ok.classList.remove('on');},4000);
 }
 
-var dashTimer=null;
-function admTab(id,btn){
-  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
-    p.classList.remove('on');
-    p.style.display='none';
-  });
-  document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
-  var el=G('adm-'+id);
-  if(el){
-    el.style.display='block';
-    el.classList.add('on');
-  }
-  btn.classList.add('on');
-  if(id==='camion-tmp') admInitCamionTmp();
-  // Synchronisation automatique du tableau de bord
-  if(dashTimer){clearInterval(dashTimer);dashTimer=null;}
-  if(id==='dashboard'){
-    admLoadDashboard();
-    // Rafraîchir toutes les 60 secondes
-    dashTimer=setInterval(function(){admLoadDashboard();},60000);
-  }
-}
 
 function admInitCamionTmp(){
   var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});

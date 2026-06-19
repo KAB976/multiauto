@@ -280,7 +280,7 @@ tr:nth-child(even) td{background:var(--gy)}
 <body>
 
 <div class="auteur">Auteur : KAB</div>
-<div id="loader"><div class="spin"></div><div class="spin-txt" id="loader-txt">Chargement...</div><button onclick="loader(false)" style="margin-top:16px;background:#fff;color:#333;border:none;padding:8px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">✕ Annuler</button></div><div class="spin-txt" id="loader-txt">Chargement...</div></div>
+<div id="loader"><div class="spin"></div><div class="spin-txt" id="loader-txt">Chargement...</div></div>
 <div id="toast"></div>
 
 <!-- ══════════════════════════════════════
@@ -1834,9 +1834,8 @@ var mblRole = '';
 
 var dashTimer=null;
 function admTab(id,btn){
-  // Si dashboard pas encore chargé et ce n'est pas dashboard/config/stats
   if(!_dashPret && id!=='dashboard' && id!=='config' && id!=='stats'){
-    showToast('Chargement en cours, veuillez patienter...');
+    showToast('Veuillez attendre le chargement du tableau de bord...');
     return;
   }
   try{
@@ -2486,27 +2485,11 @@ function chargerSelectsChauffeurs(ids){
 // API CALL
 function apiCall(params,cb){
   var url=getScriptUrl();
-  if(!url){
-    loader(false);
-    if(cb)cb(null,'URL Apps Script non configurée');
-    return;
-  }
-  var done=false;
-  var timer=setTimeout(function(){
-    if(!done){
-      done=true;
-      loader(false);
-      if(cb)cb(null,'Délai dépassé - vérifiez votre connexion');
-    }
-  },15000);
+  if(!url){if(cb)cb(null,'URL Apps Script non configurée');return}
   fetch(url+'?'+new URLSearchParams(params))
     .then(function(r){return r.json()})
-    .then(function(d){
-      if(!done){done=true;clearTimeout(timer);if(cb)cb(d,null);}
-    })
-    .catch(function(e){
-      if(!done){done=true;clearTimeout(timer);loader(false);if(cb)cb(null,e.message);}
-    });
+    .then(function(d){if(cb)cb(d,null)})
+    .catch(function(e){if(cb)cb(null,e.message)});
 }
 
 function apiPost(data,cb){
@@ -2842,16 +2825,17 @@ function saveMarque(){
 // ══════════════════════════════════════════════════════════
 function entrerAdmin(){
   showPg('pg-admin');
+  // Fonctions légères en premier
   chargerSelectsChauffeurs(['adm-bl-chauf','adm-rc-chauf','adm-gps-chauf','adm-st-chauf']);
   chargerChauffeursAdmin();
   chargerCamionsAdmin();
   chargerMarquesListAdmin();
   chargerCompteurs();
+  // Fonctions lourdes en différé pour ne pas bloquer l'interface
   setTimeout(function(){chargerLogosUI();},100);
+  setTimeout(function(){admLoadDashboard();},200);
   setTimeout(initCamionTmpSelects,500);
   setTimeout(chargerPermissionsUI,300);
-  // Dashboard chargé après tout le reste
-  setTimeout(function(){admLoadDashboard();},1000);
 }
 
 
@@ -2862,36 +2846,31 @@ function admLoadDashboard(){
   var users=getUsers();
   G('ds-chauffeurs').textContent=users.length;
   apiCall({action:'getDashboard'},function(data,err){
-    if(err||!data){G('ds-bl').textContent='—';G('ds-recus').textContent='—';G('ds-montant').textContent='—';return}
+    _dashPret=true;
+    if(err||!data){
+      G('ds-bl').textContent='—';
+      G('ds-recus').textContent='—';
+      G('ds-montant').textContent='—';
+      return;
+    }
     G('ds-bl').textContent=data.totalBL||0;
     G('ds-recus').textContent=data.totalRecus||0;
     G('ds-montant').textContent=parseFloat(data.totalMontant||0).toFixed(2)+' €';
     if(data.derniersBL){
       var bls=data.derniersBL.slice().sort(function(a,b){
         var da=parseLocalDate(formatDateFR(a.date_bl));
-        var db=parseLocalDate(formatDateFR(b.date_bl));
-        return (db&&da)?(db-da):0;
+        var db2=parseLocalDate(formatDateFR(b.date_bl));
+        return (db2&&da)?(db2-da):0;
       });
       renderBLTable(bls,'adm-dash-bl',true);
     }
     if(data.derniersRecus){
       var recus=data.derniersRecus.slice().sort(function(a,b){
         var da=parseLocalDate(formatDateFR(a.date_bl));
-        var db=parseLocalDate(formatDateFR(b.date_bl));
-        return (db&&da)?(db-da):0;
+        var db2=parseLocalDate(formatDateFR(b.date_bl));
+        return (db2&&da)?(db2-da):0;
       });
       renderRecusTable(recus,'adm-dash-recus',true);
-    } else {
-      apiCall({action:'getRecus',d1:'',d2:'',chauffeur:''},function(d2,e2){
-        if(d2&&d2.recus){
-          var recus=d2.recus.slice().sort(function(a,b){
-            var da=parseLocalDate(formatDateFR(a.date_bl));
-            var db=parseLocalDate(formatDateFR(b.date_bl));
-            return (db&&da)?(db-da):0;
-          });
-          renderRecusTable(recus.slice(0,20),'adm-dash-recus',true);
-        }
-      });
     }
   });
 }
@@ -2983,47 +2962,36 @@ function admLoadGPS(){
 
 function admLoadClients(){
   loader(true,'Chargement clients...');
-  // Utiliser les données déjà chargées dans blDataStore si disponible
-  var bls=Object.values(window.blStores&&window.blStores['adm-bl-body']||blDataStore||{});
-  if(bls.length>0){
+  apiCall({action:'getBL',d1:'',d2:'',chauffeur:''},function(data,err){
     loader(false);
-    _buildClientsFromBL(bls);
-    return;
-  }
-  // Sinon charger depuis le dashboard (plus rapide que getBL complet)
-  apiCall({action:'getDashboard'},function(data,err){
-    loader(false);
-    if(err||!data){showToast('Erreur: '+(err||''));return;}
-    var bls=data.derniersBL||[];
-    _buildClientsFromBL(bls);
+    if(err||!data){showToast('Erreur chargement');return;}
+    var bls=data.bls||[];
+    // Construire liste clients unique depuis les BL
+    var clientMap={};
+    bls.forEach(function(b){
+      if(!b.nom_client) return;
+      var key=b.nom_client.toLowerCase().trim();
+      if(!clientMap[key]){
+        clientMap[key]={
+          nom:b.nom_client,
+          tel:b.tel_client||'—',
+          vehicule:b.marque+' '+b.modele,
+          immat:b.immatriculation,
+          count:0
+        };
+      }
+      clientMap[key].count++;
+      // Mise à jour véhicule avec le plus récent
+      clientMap[key].vehicule=b.marque+' '+b.modele;
+      clientMap[key].immat=b.immatriculation;
+      clientMap[key].tel=b.tel_client||clientMap[key].tel;
+    });
+    window.admClientsData=Object.values(clientMap).sort(function(a,b){
+      return a.nom.localeCompare(b.nom,'fr');
+    });
+    admAfficherClients(window.admClientsData);
   });
 }
-
-function _buildClientsFromBL(bls){
-  var clientMap={};
-  bls.forEach(function(b){
-    if(!b.nom_client) return;
-    var key=b.nom_client.toLowerCase().trim();
-    if(!clientMap[key]){
-      clientMap[key]={
-        nom:b.nom_client,
-        tel:b.tel_client||'—',
-        vehicule:(b.marque||'')+' '+(b.modele||''),
-        immat:b.immatriculation||'—',
-        count:0
-      };
-    }
-    clientMap[key].count++;
-    clientMap[key].vehicule=(b.marque||'')+' '+(b.modele||'');
-    clientMap[key].immat=b.immatriculation||clientMap[key].immat;
-    clientMap[key].tel=b.tel_client||clientMap[key].tel;
-  });
-  window.admClientsData=Object.values(clientMap).sort(function(a,b){
-    return a.nom.localeCompare(b.nom,'fr');
-  });
-  admAfficherClients(window.admClientsData);
-}
-
 
 function admFiltrerClients(){
   if(!window.admClientsData) return;

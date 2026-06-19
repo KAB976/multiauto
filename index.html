@@ -1733,18 +1733,15 @@ function chargerLogosBase64(cb){
   if(pending===0) cb(result);
 }
 
-var _cfgCache=null;
 function getConfig(){
-  if(_cfgCache) return _cfgCache;
   var defaults={nom:'Multi Auto Center',tel:'',adr:'',ville:'',email:'',web:'',logoG:'',logoD:'',script:'',pwdAdmin:'admin2024',pwdSec:'secretaire2024'};
   var cfg=lsGet('app_config')||{};
+  // Toujours avoir les valeurs par défaut si absentes
   Object.keys(defaults).forEach(function(k){if(!cfg[k])cfg[k]=defaults[k];});
-  _cfgCache=cfg;
   return cfg;
 }
-function invalidateConfigCache(){_cfgCache=null;}
 function saveConfigLocal(cfg){
-  lsSet('app_config',cfg);_cfgCache=null;
+  lsSet('app_config',cfg);
   var cfgSheets={nom:cfg.nom,tel:cfg.tel,adr:cfg.adr,ville:cfg.ville,email:cfg.email,web:cfg.web,script:cfg.script,pwdAdmin:cfg.pwdAdmin,pwdSec:cfg.pwdSec};
   apiPost({action:'saveConfig',config:cfgSheets});
 }
@@ -1837,17 +1834,25 @@ var mblRole = '';
 
 var dashTimer=null;
 function admTab(id,btn){
-  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
-    p.classList.remove('on');
-    p.style.display='none';
-  });
-  document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
-  var el=G('adm-'+id);
-  if(el){el.style.display='block';el.classList.add('on');}
-  btn.classList.add('on');
-  if(id==='camion-tmp') admInitCamionTmp();
-  if(id==='dashboard') admLoadDashboard();
-  if(id==='clients') admLoadClients();
+  try{
+    // Fermer loader si ouvert par erreur precedente
+    loader(false);
+    document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
+      p.classList.remove('on');
+      p.style.display='none';
+    });
+    document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
+    var el=G('adm-'+id);
+    if(el){el.style.display='block';el.classList.add('on');}
+    if(btn) btn.classList.add('on');
+    if(id==='camion-tmp') admInitCamionTmp();
+    if(id==='dashboard') admLoadDashboard();
+    if(id==='clients') admLoadClients();
+  }catch(e){
+    loader(false);
+    console.error('admTab erreur:',e);
+    showToast('Erreur: '+e.message);
+  }
 }
 
 
@@ -1998,7 +2003,7 @@ function chargerDepuisSheets(){
         Object.keys(d.config).forEach(function(k){
           if(d.config[k] && protectedKeys.indexOf(k)<0) cfg[k]=d.config[k];
         });
-        lsSet('app_config',cfg);_cfgCache=null;
+        lsSet('app_config',cfg);
         if(d.config.script) lsSet('cfg_script',d.config.script);
       }
       // Chauffeurs
@@ -3323,7 +3328,7 @@ function urgenceViderLogos(){
   if(!confirm('Vider tous les logos pour débloquer ? (les autres données restent)')) return;
   var cfg=getConfig();
   cfg.logoG=''; cfg.logoD='';
-  lsSet('app_config',cfg);_cfgCache=null;
+  lsSet('app_config',cfg);
   lsRemove('logo_b64_G');
   lsRemove('logo_b64_D');
   showToast('Logos vidés - rechargez la page');
@@ -3342,7 +3347,7 @@ function supprimerLogo(side){
     var prev=G('logo-droite-prev');
     if(prev){prev.src='';prev.style.display='none';}
   }
-  lsSet('app_config',cfg);_cfgCache=null;
+  lsSet('app_config',cfg);
   chargerLogosUI();
   showToast('✅ Logo supprimé');
 }
@@ -3357,7 +3362,7 @@ function uploadLogoGauche(e){
   reader.onload=function(ev){
     var data=ev.target.result;
     try{
-      var cfg=getConfig(); cfg.logoG=data; lsSet('app_config',cfg);_cfgCache=null;
+      var cfg=getConfig(); cfg.logoG=data; lsSet('app_config',cfg);
       apiPost({action:'saveLogo',side:'G',data:data});
       G('logo-gauche-prev').src=data; G('logo-gauche-prev').style.display='block';
       chargerLogosUI(); showToast('✅ Logo gauche enregistré');
@@ -3377,7 +3382,7 @@ function uploadLogoDroite(e){
   var reader=new FileReader();
   reader.onload=function(ev){
     var data=ev.target.result;
-    var cfg=getConfig(); cfg.logoD=data; lsSet('app_config',cfg);_cfgCache=null;
+    var cfg=getConfig(); cfg.logoD=data; lsSet('app_config',cfg);
     var url=getScriptUrl();
     apiPost({action:'saveLogo',side:'D',data:data});
     G('logo-droite-prev').src=data; G('logo-droite-prev').style.display='block';

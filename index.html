@@ -1190,7 +1190,7 @@ tr:nth-child(even) td{background:var(--gy)}
 // ══════════════════════════════════════════════════════════
 //  CONFIGURATION & CONSTANTES
 // ══════════════════════════════════════════════════════════
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQ8tTGg8yDsTYYoB3L1Oz5klPw7PCLwfLle0FqLXOCZitW8a9U8R-LXmoFinA7luGR2w/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYwG6a5l0Zpx7RvFkIUnmXWSkFnPWkP4TPTimHvbsu4yjscgIhpsS8dmV3gq7QKA03mA/exec';
 
 // ══════════════════════════════════════════════════════════
 //  UTILITAIRES
@@ -1771,7 +1771,7 @@ function incCounterBL(pref){lsSet('bl_'+pref,getCounterBL(pref)+1)}
 function incCounterRC(pref){lsSet('rc_'+pref,getCounterRC(pref)+1)}
 
 // Script URL
-function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbxQ8tTGg8yDsTYYoB3L1Oz5klPw7PCLwfLle0FqLXOCZitW8a9U8R-LXmoFinA7luGR2w/exec'}
+function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https://script.google.com/macros/s/AKfycbxYwG6a5l0Zpx7RvFkIUnmXWSkFnPWkP4TPTimHvbsu4yjscgIhpsS8dmV3gq7QKA03mA/exec'}
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -1834,6 +1834,11 @@ var mblRole = '';
 
 var dashTimer=null;
 function admTab(id,btn){
+  // Si dashboard pas encore chargé et ce n'est pas dashboard/config/stats
+  if(!_dashPret && id!=='dashboard' && id!=='config' && id!=='stats'){
+    showToast('Chargement en cours, veuillez patienter...');
+    return;
+  }
   try{
     loader(false);
     document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
@@ -2852,6 +2857,7 @@ function entrerAdmin(){
 
 // admTab intégré dans initCamionTmpSelects
 
+var _dashPret=false;
 function admLoadDashboard(){
   var users=getUsers();
   G('ds-chauffeurs').textContent=users.length;

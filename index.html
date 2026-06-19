@@ -1834,29 +1834,20 @@ var mblRole = '';
 
 var dashTimer=null;
 function admTab(id,btn){
-  if(!_dashPret && id!=='dashboard' && id!=='config' && id!=='stats'){
-    showToast('Veuillez attendre le chargement du tableau de bord...');
-    return;
-  }
-  try{
-    loader(false);
-    document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
-      p.classList.remove('on');
-      p.style.display='none';
-    });
-    document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){
-      b.classList.remove('on');
-    });
-    var el=G('adm-'+id);
-    if(el){el.style.display='block';el.classList.add('on');}
-    if(btn) btn.classList.add('on');
-    if(id==='camion-tmp') admInitCamionTmp();
-    if(id==='dashboard') admLoadDashboard();
-    if(id==='clients') admLoadClients();
-  }catch(e){
-    loader(false);
-    showToast('Erreur: '+e.message);
-  }
+  loader(false);
+  document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
+    p.classList.remove('on');
+    p.style.display='none';
+  });
+  document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){
+    b.classList.remove('on');
+  });
+  var el=G('adm-'+id);
+  if(el){el.style.display='block';el.classList.add('on');}
+  if(btn) btn.classList.add('on');
+  if(id==='camion-tmp') admInitCamionTmp();
+  if(id==='dashboard') admLoadDashboard();
+  if(id==='clients') admLoadClients();
 }
 
 

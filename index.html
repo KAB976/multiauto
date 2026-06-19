@@ -1498,26 +1498,6 @@ function parseLocalDate(str){
 }
 
 // Formater une date en dd/MM/yyyy
-function formatHeureFR(str){
-  if(!str) return '';
-  str=String(str).trim();
-  // Déjà format HHhMM ou HH:MM
-  if(/^\d{1,2}h\d{2}$/.test(str)) return str;
-  if(/^\d{1,2}:\d{2}$/.test(str)){
-    var p=str.split(':');
-    return ('0'+p[0]).slice(-2)+'h'+('0'+p[1]).slice(-2);
-  }
-  // Format Date JS long "Sun Jun 14 2026 11:24:00 GMT+..."
-  if(str.length>10){
-    try{
-      var d=new Date(str);
-      if(!isNaN(d.getTime())){
-        return ('0'+d.getHours()).slice(-2)+'h'+('0'+d.getMinutes()).slice(-2);
-      }
-    }catch(e){}
-  }
-  return str;
-}
 
 function formatHeureFR(str){
   if(!str) return '';
@@ -1797,53 +1777,6 @@ function getScriptUrl(){return lsGet('cfg_script')||getConfig().script||'https:/
 //  INIT
 // ══════════════════════════════════════════════════════════
 // ── CHARGEMENT DEPUIS SHEETS AU DÉMARRAGE ────────────────
-function chargerDepuisSheets(){
-  var url=getScriptUrl();
-  if(!url) return;
-  fetch(url+'?action=getAppData')
-    .then(function(r){return r.json()})
-    .then(function(d){
-      if(!d) return;
-      // Config
-      if(d.config){
-        var cfg=getConfig();
-        // Ne pas écraser les mots de passe depuis Sheets
-        var protectedKeys=['pwdAdmin','pwdSec'];
-        Object.keys(d.config).forEach(function(k){
-          if(d.config[k] && protectedKeys.indexOf(k)<0) cfg[k]=d.config[k];
-        });
-        lsSet('app_config',cfg);
-        if(d.config.script) lsSet('cfg_script',d.config.script);
-      }
-      // Chauffeurs
-      if(d.users && d.users.length){
-        lsSet('app_users',d.users);
-      }
-      // Camions
-      if(d.camions && d.camions.length){
-        lsSet('app_camions',d.camions);
-      }
-      // Marques
-      if(d.marques && d.marques.length){
-        lsSet('app_marques',d.marques);
-      }
-      // Clients
-      if(d.clients && d.clients.length){
-        lsSet('app_clients',d.clients);
-      }
-      // Compteurs BL/Reçus
-      if(d.compteurs){
-        Object.keys(d.compteurs).forEach(function(k){
-          lsSet(k, d.compteurs[k]);
-        });
-      }
-      chargerLogosUI();
-      console.log('✅ Données chargées depuis Google Sheets');
-    })
-    .catch(function(e){
-      console.log('⚠️ Chargement hors ligne — données locales utilisées');
-    });
-}
 
 window.addEventListener('load', function(){
   chargerLogosUI();
@@ -1878,61 +1811,9 @@ function chargerLogosUI(){
 // ══════════════════════════════════════════════════════════
 //  GESTION PERMISSIONS SECRÉTAIRE
 // ══════════════════════════════════════════════════════════
-function getPermissions(){
-  return lsGet('sec_permissions')||{
-    creerBL:true, camionTmp:true, recus:true,
-    pdf:true, clients:true, vehicules:true, stats:true
-  };
-}
 
-function savePermissions(){
-  var perms={
-    creerBL:G('perm-creer-bl').checked,
-    camionTmp:G('perm-camion-tmp').checked,
-    recus:G('perm-recus').checked,
-    pdf:G('perm-pdf').checked,
-    clients:G('perm-clients').checked,
-    vehicules:G('perm-vehicules').checked,
-    gps:G('perm-gps')?G('perm-gps').checked:true,
-    stats:G('perm-stats').checked
-  };
-  lsSet('sec_permissions',perms);
-  // Sauvegarder aussi dans Sheets
-  apiPost({action:'saveConfig',config:Object.assign(getConfig(),{permissions:JSON.stringify(perms)})});
-  var ok=G('perm-ok');
-  ok.textContent='✅ Permissions enregistrées';
-  ok.classList.add('on');
-  setTimeout(function(){ok.classList.remove('on');},3000);
-}
 
-function chargerPermissionsUI(){
-  var perms=getPermissions();
-  var ids={creerBL:'perm-creer-bl',camionTmp:'perm-camion-tmp',recus:'perm-recus',pdf:'perm-pdf',clients:'perm-clients',vehicules:'perm-vehicules',gps:'perm-gps',stats:'perm-stats'};
-  Object.keys(ids).forEach(function(k){var e=G(ids[k]);if(e)e.checked=perms[k]!==false;});
-}
 
-function appliquerPermissionsSecretaire(){
-  try{
-    var perms=getPermissions();
-    // Onglets nav secrétaire - seulement dans le portail secrétaire
-    var navBtns=document.querySelectorAll('#pg-secretaire .nav-btn');
-    navBtns.forEach(function(btn){
-      var txt=btn.textContent||'';
-      if(txt.indexOf('Reçus')>=0) btn.style.display=perms.recus!==false?'':'none';
-      if(txt.indexOf('Clients')>=0) btn.style.display=perms.clients!==false?'':'none';
-      if(txt.indexOf('Véhicules')>=0) btn.style.display=perms.vehicules!==false?'':'none';
-      if(txt.indexOf('GPS')>=0) btn.style.display=perms.gps!==false?'':'none';
-      if(txt.indexOf('Statistiques')>=0) btn.style.display=perms.stats!==false?'':'none';
-      if(txt.indexOf('Camion')>=0) btn.style.display=perms.camionTmp!==false?'':'none';
-    });
-    // Bouton créer BL - seulement dans le portail secrétaire
-    var btnBL=document.querySelector('#pg-secretaire #sec-bl .btn-or');
-    if(btnBL) btnBL.style.display=perms.creerBL!==false?'':'none';
-    // Onglet camion temp
-    var navCam=G('sec-nav-camion');
-    if(navCam) navCam.style.display=perms.camionTmp!==false?'':'none';
-  }catch(e){console.warn('Permissions sec:',e);}
-}
 
 // ══════════════════════════════════════════════════════
 //  MODAL BL ADMIN/SECRÉTAIRE
@@ -1940,183 +1821,16 @@ function appliquerPermissionsSecretaire(){
 var mblPhotoData = null;
 var mblRole = '';
 
-function ouvrirModalBL(role){
-  mblRole = role;
-  mblPhotoData = null;
-  // Reset champs
-  ['mbl-immat','mbl-client','mbl-tel','mbl-emb','mbl-dest','mbl-obs','mbl-montant','mbl-camion'].forEach(function(id){var e=G(id);if(e)e.value='';});
-  G('mbl-chk-esp').checked=false; G('mbl-esp-box').style.display='none';
-  G('mbl-photo-prev').style.display='none'; G('mbl-pz-inner').style.display='flex';
-  G('mbl-photo-zone').classList.remove('ok');
-  G('mbl-err').classList.remove('on');
-  // Date et heure par défaut = maintenant
-  var now=new Date();
-  G('mbl-date').value=now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
-  G('mbl-heure').value=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
-  // Charger chauffeurs
-  var users=getUsers();
-  var sel=G('mbl-chauffeur');
-  sel.innerHTML='<option value="">-- Choisir chauffeur --</option>';
-  users.sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')}).forEach(function(u){
-    sel.innerHTML+='<option value="'+u.id+'">'+u.nom+(u.camion?' — '+u.camion:'')+'</option>';
-  });
-  // Charger marques
-  var marques=getMarques().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
-  var selM=G('mbl-marque');
-  selM.innerHTML='<option value="">-- Marque --</option>';
-  marques.forEach(function(m){selM.innerHTML+='<option value="'+m.nom+'">'+m.nom+'</option>';});
-  // Tarif auto
-  var tnTw=calcTnTw(now);
-  G('mbl-tarif').value=tnTw||'';
-  openModal('modal-bl-form');
-}
 
-function majMblInfos(){
-  var id=G('mbl-chauffeur').value;
-  var users=getUsers();
-  var u=users.find(function(x){return x.id===id});
-  G('mbl-camion').value=u?(u.camion||'')+(u.immatCam?' ('+u.immatCam+')':''):'';
-}
 
-function majMblModeles(){
-  var marque=G('mbl-marque').value;
-  var marques=getMarques();
-  var found=marques.find(function(m){return m.nom===marque});
-  var sel=G('mbl-modele');
-  sel.innerHTML='<option value="">-- Modèle --</option>';
-  if(found){
-    found.modeles.slice().sort(function(a,b){return a.localeCompare(b,'fr')}).forEach(function(mo){
-      sel.innerHTML+='<option value="'+mo+'">'+mo+'</option>';
-    });
-  }
-}
 
-function toggleMblEsp(){
-  G('mbl-esp-box').style.display=G('mbl-chk-esp').checked?'block':'none';
-}
 
-function mblPhotoCapture(e){
-  var file=e.target.files[0]; if(!file) return;
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    var img=new Image();
-    img.onload=function(){
-      var canvas=document.createElement('canvas');
-      var MAX=900;
-      var w=img.width, h=img.height;
-      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
-      if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      mblPhotoData=canvas.toDataURL('image/jpeg',0.75);
-      G('mbl-photo-prev').src=mblPhotoData;
-      G('mbl-photo-prev').style.display='block';
-      G('mbl-pz-inner').style.display='none';
-      G('mbl-photo-zone').classList.add('ok');
-    };
-    img.src=ev.target.result;
-  };
-  reader.readAsDataURL(file);
-}
 
-function soumettreMBL(){
-  var err=G('mbl-err'); err.classList.remove('on');
-  var chaufId=G('mbl-chauffeur').value;
-  var immat=G('mbl-immat').value.trim().toUpperCase();
-  var marque=G('mbl-marque').value;
-  var modele=G('mbl-modele').value;
-  var client=G('mbl-client').value.trim();
-  var emb=G('mbl-emb').value.trim();
-  var dest=G('mbl-dest').value.trim();
-  var dateVal=G('mbl-date').value;
-  if(!chaufId){err.textContent="Choisissez un chauffeur";err.classList.add('on');return;}
-  if(!immat){err.textContent="Saisissez immatriculation";err.classList.add('on');return;}
-  if(!marque){err.textContent="Choisissez la marque";err.classList.add('on');return;}
-  if(!modele){err.textContent="Choisissez le modèle";err.classList.add('on');return;}
-  if(!client){err.textContent="Saisissez le nom du client";err.classList.add('on');return;}
-  if(!emb){err.textContent="Saisissez embarquement";err.classList.add('on');return;}
-  if(!dest){err.textContent="Saisissez la destination";err.classList.add('on');return;}
-  var users=getUsers();
-  var u=users.find(function(x){return x.id===chaufId});
-  if(!u){err.textContent="Chauffeur introuvable";err.classList.add('on');return;}
-  var especes=G('mbl-chk-esp').checked;
-  var montant=especes?parseFloat(G('mbl-montant').value)||0:0;
-  if(especes&&!montant){err.textContent="Saisissez le montant";err.classList.add('on');return;}
-  // Construire date
-  var dateParts=dateVal.split('-');
-  var dateFR=dateParts[2]+'/'+dateParts[1]+'/'+dateParts[0];
-  var heure=G('mbl-heure').value||fmtHeure(new Date());
-  var tnTw=G('mbl-tarif').value;
-  var nBL=getCounterBL(u.prefixBL);
-  var nRC=especes?getCounterRC(u.prefixR):0;
-  var bonNum=fmtBL(u.prefixBL,nBL);
-  var recuNum=especes?fmtRC(u.prefixR,nRC):'';
-  var payload={
-    action:'ajouterBL',
-    bon_num:bonNum, recu_num:recuNum,
-    prefix_bl:u.prefixBL, prefix_r:u.prefixR,
-    chauffeur_id:u.id, chauffeur_nom:u.nom,
-    chauffeur_camion:u.camion||'', chauffeur_immat_camion:u.immatCam||'',
-    date_bl:dateFR, heure_bl:heure,
-    date_heure_bl:dateFR+' à '+heure,
-    date_debut:dateFR+' à '+heure,
-    duree_min:'', tn_tw:tnTw,
-    immatriculation:immat, marque:marque, modele:modele,
-    nom_client:client, tel_client:G('mbl-tel').value.trim(),
-    lieu_embarquement:emb, destination:dest,
-    observations:G('mbl-obs').value.trim(),
-    gps_emb_lieu:'', gps_emb_lat:'', gps_emb_lng:'',
-    gps_dest_lieu:'', gps_dest_lat:'', gps_dest_lng:'',
-    mode_paiement:especes?'Espèces':'',
-    montant_especes:especes?montant.toFixed(2):'',
-    montant_lettres:especes?montantEnLettres(montant):'',
-    signature:'',
-    photo_vehicule:mblPhotoData||''
-  };
-  incCounterBL(u.prefixBL);
-  if(especes) incCounterRC(u.prefixR);
-  loader(true,'Enregistrement...');
-  var url=getScriptUrl();
-  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
-    .then(function(){loader(false);closeModal('modal-bl-form');showToast('✅ BL '+bonNum+' enregistré !');if(mblRole==='admin')admLoadBL();else secLoadBL();})
-    .catch(function(){
-      var off=lsGet('bons_offline')||[]; off.push(payload); lsSet('bons_offline',off);
-      loader(false);closeModal('modal-bl-form');showToast('📵 BL sauvegardé hors ligne');
-    });
-}
 
 // ══════════════════════════════════════════════════════════
 //  CHANGEMENT CAMION TEMPORAIRE
 // ══════════════════════════════════════════════════════════
-function majCamionsTmp(){
-  var camions=getCamions();
-  var sel=G('tmp-camion-sel');
-  sel.innerHTML='<option value="">-- Choisir camion --</option>';
-  camions.sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')}).forEach(function(c){
-    sel.innerHTML+='<option value="'+c.id+'" data-nom="'+c.nom+'" data-immat="'+c.immat+'">'+c.nom+' ('+c.immat+')</option>';
-  });
-}
 
-function assignerCamionTmp(){
-  var chaufId=G('tmp-chauf-sel').value;
-  var camSel=G('tmp-camion-sel');
-  var camId=camSel.value;
-  if(!chaufId||!camId){showToast('Choisissez un chauffeur et un camion');return;}
-  var opt=camSel.options[camSel.selectedIndex];
-  var camNom=opt.dataset.nom||'';
-  var camImmat=opt.dataset.immat||'';
-  var users=getUsers();
-  var idx=users.findIndex(function(u){return u.id===chaufId});
-  if(idx<0){showToast('Chauffeur introuvable');return;}
-  users[idx].camion=camNom;
-  users[idx].immatCam=camImmat;
-  saveUsers(users);
-  chargerChauffeursAdmin();
-  var ok=G('tmp-cam-ok');
-  ok.textContent='✅ Camion '+camNom+' ('+camImmat+') assigné à '+users[idx].nom;
-  ok.classList.add('on');
-  setTimeout(function(){ok.classList.remove('on');},4000);
-}
 
 var dashTimer=null;
 function admTab(id,btn){
@@ -2133,85 +1847,11 @@ function admTab(id,btn){
   if(id==='clients') admLoadClients();
 }
 
-function admInitCamionTmp(){
-  var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
-  var sel=G('adm-tmp-chauf-sel');
-  if(!sel) return;
-  sel.innerHTML='<option value="">-- Choisir chauffeur --</option>';
-  users.forEach(function(u){
-    sel.innerHTML+='<option value="'+u.id+'">'+u.nom+'</option>';
-  });
-  admMajCamionsTmp();
-  admAfficherEtatChauffeurs();
-}
 
-function admMajCamionsTmp(){
-  var id=G('adm-tmp-chauf-sel').value;
-  var users=getUsers();
-  var u=users.find(function(x){return x.id===id});
-  G('adm-tmp-camion-actuel').value=u?(u.camion||'Aucun')+(u.immatCam?' ('+u.immatCam+')':''):'';
-  var camions=getCamions().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
-  var sel=G('adm-tmp-camion-sel');
-  sel.innerHTML='<option value="">-- Choisir camion --</option>';
-  camions.forEach(function(c){
-    sel.innerHTML+='<option value="'+c.id+'" data-nom="'+c.nom+'" data-immat="'+c.immat+'">'+c.nom+' ('+c.immat+')</option>';
-  });
-}
 
-function admAssignerCamionTmp(){
-  var chaufId=G('adm-tmp-chauf-sel').value;
-  var camSel=G('adm-tmp-camion-sel');
-  var camId=camSel.value;
-  var ok=G('adm-tmp-cam-ok');
-  var err=G('adm-tmp-cam-err');
-  ok.classList.remove('on'); err.classList.remove('on');
-  if(!chaufId){err.textContent="Choisissez un chauffeur";err.classList.add('on');return;}
-  if(!camId){err.textContent="Choisissez un camion";err.classList.add('on');return;}
-  var opt=camSel.options[camSel.selectedIndex];
-  var camNom=opt.dataset.nom||'';
-  var camImmat=opt.dataset.immat||'';
-  var users=getUsers();
-  var idx=users.findIndex(function(u){return u.id===chaufId});
-  if(idx<0){err.textContent="Chauffeur introuvable";err.classList.add('on');return;}
-  var nomChauf=users[idx].nom;
-  users[idx].camion=camNom;
-  users[idx].immatCam=camImmat;
-  saveUsers(users);
-  chargerChauffeursAdmin();
-  admAfficherEtatChauffeurs();
-  ok.textContent='✅ Camion '+camNom+' ('+camImmat+') assigné à '+nomChauf;
-  ok.classList.add('on');
-  setTimeout(function(){ok.classList.remove('on');},4000);
-  G('adm-tmp-chauf-sel').value='';
-  G('adm-tmp-camion-actuel').value='';
-}
 
-function admAfficherEtatChauffeurs(){
-  var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
-  var cont=G('adm-tmp-chauf-etat');
-  if(!cont) return;
-  if(!users.length){cont.innerHTML='<p style="color:var(--mt);font-size:13px">Aucun chauffeur configuré</p>';return;}
-  cont.innerHTML=users.map(function(u){
-    return '<div class="list-item"><div style="flex:1"><div class="li-name">'+u.nom+'</div><div class="li-sub">Camion : '+(u.camion||'Aucun')+(u.immatCam?' ('+u.immatCam+')':'')+'</div></div></div>';
-  }).join('');
-}
 
-function initCamionTmpSelects(){
-  var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
-  var sel=G('tmp-chauf-sel');
-  if(!sel) return;
-  sel.innerHTML='<option value="">-- Choisir chauffeur --</option>';
-  users.forEach(function(u){
-    sel.innerHTML+='<option value="'+u.id+'">'+u.nom+(u.camion?' — '+u.camion:'')+'</option>';
-  });
-  majCamionsTmp();
-}
 
-function initServiceWorker(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  }
-}
 
 // ══════════════════════════════════════════════════════════
 //  LOGIN
@@ -3767,12 +3407,6 @@ var currentPDFData = null;
 // Stores pour éviter les problèmes d'apostrophes dans onclick
 var blDataStore={};
 var rcDataStore={};
-function voirBLById(id){var b=blDataStore[id];if(b)voirBL(b);else showToast('Données introuvables');}
-function voirRecuById(id){var r=rcDataStore[id];if(r)voirRecu(r);else showToast('Données introuvables');}
-function imprimerBLById(id){var b=blDataStore[id];if(b)imprimerDoc(b,'bl');else showToast('Données introuvables');}
-function imprimerRecuById(id){var r=rcDataStore[id];if(r)imprimerDoc(r,'recu');else showToast('Données introuvables');}
-function telechargerBLById(id){var b=blDataStore[id];if(b)telechargerDoc(b,'bl');else showToast('Données introuvables');}
-function telechargerRecuById(id){var r=rcDataStore[id];if(r)telechargerDoc(r,'recu');else showToast('Données introuvables');}
 
 function voirRecu(r){
   currentPDFData={type:'recu',data:r};
@@ -3785,15 +3419,6 @@ function voirRecu(r){
   });
 }
 
-function imprimerDoc(data,type){
-  var nom=type==='bl'?data.bon_num:data.recu_num;
-  chargerLogosBase64(function(logos){
-    var cfg=getConfig();
-    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
-    var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
-    ouvrirDocumentPrint(html,nom);
-  });
-}
 
 function telechargerDoc(data,type){
   var nom=type==='bl'?data.bon_num:data.recu_num;
@@ -3857,15 +3482,6 @@ function telechargerDoc(data,type){
 
 
 
-function imprimerDoc(data,type){
-  var nom=type==='bl'?data.bon_num:data.recu_num;
-  chargerLogosBase64(function(logos){
-    var cfg=getConfig();
-    cfg.logoG=logos.logoG; cfg.logoD=logos.logoD;
-    var html=type==='bl'?renderBLHTML(data,cfg):renderRecuHTML(data,cfg);
-    ouvrirDocumentPrint(html,nom);
-  });
-}
 
 
 

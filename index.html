@@ -2731,10 +2731,8 @@ document.addEventListener('DOMContentLoaded',function(){
 function entrerSecretaire(){
   showPg('pg-secretaire');
   chargerSelectsChauffeurs(['sec-bl-chauf','sec-rc-chauf','sec-st-chauf','sec-gps-chauf']);
-  chargerClientsTable();
   chargerMarquesListSec();
   secInitCamionTmp();
-  // S'assurer que seul le premier onglet est visible
   document.querySelectorAll('#pg-secretaire .sub-pg').forEach(function(p){
     p.style.display='none';
     p.classList.remove('on');
@@ -2743,8 +2741,11 @@ function entrerSecretaire(){
   if(firstTab){firstTab.style.display='block';firstTab.classList.add('on');}
   var firstBtn=document.querySelector('#pg-secretaire .nav-btn');
   if(firstBtn){firstBtn.classList.add('on');}
+  // Clients et permissions en différé
+  setTimeout(function(){chargerClientsTable();},100);
   setTimeout(appliquerPermissionsSecretaire,300);
 }
+
 
 function secInitCamionTmp(){
   var users=getUsers().slice().sort(function(a,b){return a.nom.localeCompare(b.nom,'fr')});
@@ -3172,16 +3173,19 @@ function saveMarque(){
 // ══════════════════════════════════════════════════════════
 function entrerAdmin(){
   showPg('pg-admin');
+  // Fonctions légères en premier
   chargerSelectsChauffeurs(['adm-bl-chauf','adm-rc-chauf','adm-gps-chauf','adm-st-chauf']);
   chargerChauffeursAdmin();
   chargerCamionsAdmin();
   chargerMarquesListAdmin();
   chargerCompteurs();
-  chargerLogosUI();
-  admLoadDashboard();
+  // Fonctions lourdes en différé pour ne pas bloquer l'interface
+  setTimeout(function(){chargerLogosUI();},100);
+  setTimeout(function(){admLoadDashboard();},200);
   setTimeout(initCamionTmpSelects,500);
   setTimeout(chargerPermissionsUI,300);
 }
+
 
 // admTab intégré dans initCamionTmpSelects
 

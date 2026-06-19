@@ -1834,17 +1834,16 @@ var mblRole = '';
 
 var dashTimer=null;
 function admTab(id,btn){
-  loader(false);
+  var el=G('adm-'+id);
+  if(!el){showToast('Onglet introuvable: adm-'+id);return;}
   document.querySelectorAll('#pg-admin .sub-pg').forEach(function(p){
     p.classList.remove('on');
     p.style.display='none';
   });
-  document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){
-    b.classList.remove('on');
-  });
-  var el=G('adm-'+id);
-  if(el){el.style.display='block';el.classList.add('on');}
-  if(btn) btn.classList.add('on');
+  document.querySelectorAll('#pg-admin .nav-btn').forEach(function(b){b.classList.remove('on')});
+  el.style.display='block';
+  el.classList.add('on');
+  btn.classList.add('on');
   if(id==='camion-tmp') admInitCamionTmp();
   if(id==='dashboard') admLoadDashboard();
   if(id==='clients') admLoadClients();
@@ -2832,36 +2831,40 @@ function entrerAdmin(){
 
 // admTab intégré dans initCamionTmpSelects
 
-var _dashPret=false;
 function admLoadDashboard(){
   var users=getUsers();
   G('ds-chauffeurs').textContent=users.length;
   apiCall({action:'getDashboard'},function(data,err){
-    _dashPret=true;
-    if(err||!data){
-      G('ds-bl').textContent='—';
-      G('ds-recus').textContent='—';
-      G('ds-montant').textContent='—';
-      return;
-    }
+    if(err||!data){G('ds-bl').textContent='—';G('ds-recus').textContent='—';G('ds-montant').textContent='—';return}
     G('ds-bl').textContent=data.totalBL||0;
     G('ds-recus').textContent=data.totalRecus||0;
     G('ds-montant').textContent=parseFloat(data.totalMontant||0).toFixed(2)+' €';
     if(data.derniersBL){
       var bls=data.derniersBL.slice().sort(function(a,b){
         var da=parseLocalDate(formatDateFR(a.date_bl));
-        var db2=parseLocalDate(formatDateFR(b.date_bl));
-        return (db2&&da)?(db2-da):0;
+        var db=parseLocalDate(formatDateFR(b.date_bl));
+        return (db&&da)?(db-da):0;
       });
       renderBLTable(bls,'adm-dash-bl',true);
     }
     if(data.derniersRecus){
       var recus=data.derniersRecus.slice().sort(function(a,b){
         var da=parseLocalDate(formatDateFR(a.date_bl));
-        var db2=parseLocalDate(formatDateFR(b.date_bl));
-        return (db2&&da)?(db2-da):0;
+        var db=parseLocalDate(formatDateFR(b.date_bl));
+        return (db&&da)?(db-da):0;
       });
       renderRecusTable(recus,'adm-dash-recus',true);
+    } else {
+      apiCall({action:'getRecus',d1:'',d2:'',chauffeur:''},function(d2,e2){
+        if(d2&&d2.recus){
+          var recus=d2.recus.slice().sort(function(a,b){
+            var da=parseLocalDate(formatDateFR(a.date_bl));
+            var db=parseLocalDate(formatDateFR(b.date_bl));
+            return (db&&da)?(db-da):0;
+          });
+          renderRecusTable(recus.slice(0,20),'adm-dash-recus',true);
+        }
+      });
     }
   });
 }

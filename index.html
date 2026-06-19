@@ -2978,36 +2978,47 @@ function admLoadGPS(){
 
 function admLoadClients(){
   loader(true,'Chargement clients...');
-  apiCall({action:'getBL',d1:'',d2:'',chauffeur:''},function(data,err){
+  // Utiliser les données déjà chargées dans blDataStore si disponible
+  var bls=Object.values(window.blStores&&window.blStores['adm-bl-body']||blDataStore||{});
+  if(bls.length>0){
     loader(false);
-    if(err||!data){showToast('Erreur chargement');return;}
-    var bls=data.bls||[];
-    // Construire liste clients unique depuis les BL
-    var clientMap={};
-    bls.forEach(function(b){
-      if(!b.nom_client) return;
-      var key=b.nom_client.toLowerCase().trim();
-      if(!clientMap[key]){
-        clientMap[key]={
-          nom:b.nom_client,
-          tel:b.tel_client||'—',
-          vehicule:b.marque+' '+b.modele,
-          immat:b.immatriculation,
-          count:0
-        };
-      }
-      clientMap[key].count++;
-      // Mise à jour véhicule avec le plus récent
-      clientMap[key].vehicule=b.marque+' '+b.modele;
-      clientMap[key].immat=b.immatriculation;
-      clientMap[key].tel=b.tel_client||clientMap[key].tel;
-    });
-    window.admClientsData=Object.values(clientMap).sort(function(a,b){
-      return a.nom.localeCompare(b.nom,'fr');
-    });
-    admAfficherClients(window.admClientsData);
+    _buildClientsFromBL(bls);
+    return;
+  }
+  // Sinon charger depuis le dashboard (plus rapide que getBL complet)
+  apiCall({action:'getDashboard'},function(data,err){
+    loader(false);
+    if(err||!data){showToast('Erreur: '+(err||''));return;}
+    var bls=data.derniersBL||[];
+    _buildClientsFromBL(bls);
   });
 }
+
+function _buildClientsFromBL(bls){
+  var clientMap={};
+  bls.forEach(function(b){
+    if(!b.nom_client) return;
+    var key=b.nom_client.toLowerCase().trim();
+    if(!clientMap[key]){
+      clientMap[key]={
+        nom:b.nom_client,
+        tel:b.tel_client||'—',
+        vehicule:(b.marque||'')+' '+(b.modele||''),
+        immat:b.immatriculation||'—',
+        count:0
+      };
+    }
+    clientMap[key].count++;
+    clientMap[key].vehicule=(b.marque||'')+' '+(b.modele||'');
+    clientMap[key].immat=b.immatriculation||clientMap[key].immat;
+    clientMap[key].tel=b.tel_client||clientMap[key].tel;
+  });
+  window.admClientsData=Object.values(clientMap).sort(function(a,b){
+    return a.nom.localeCompare(b.nom,'fr');
+  });
+  admAfficherClients(window.admClientsData);
+}
+
 
 function admFiltrerClients(){
   if(!window.admClientsData) return;

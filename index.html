@@ -2481,11 +2481,27 @@ function chargerSelectsChauffeurs(ids){
 // API CALL
 function apiCall(params,cb){
   var url=getScriptUrl();
-  if(!url){if(cb)cb(null,'URL Apps Script non configurée');return}
+  if(!url){
+    loader(false);
+    if(cb)cb(null,'URL Apps Script non configurée');
+    return;
+  }
+  var done=false;
+  var timer=setTimeout(function(){
+    if(!done){
+      done=true;
+      loader(false);
+      if(cb)cb(null,'Délai dépassé - vérifiez votre connexion');
+    }
+  },15000);
   fetch(url+'?'+new URLSearchParams(params))
     .then(function(r){return r.json()})
-    .then(function(d){if(cb)cb(d,null)})
-    .catch(function(e){if(cb)cb(null,e.message)});
+    .then(function(d){
+      if(!done){done=true;clearTimeout(timer);if(cb)cb(d,null);}
+    })
+    .catch(function(e){
+      if(!done){done=true;clearTimeout(timer);loader(false);if(cb)cb(null,e.message);}
+    });
 }
 
 function apiPost(data,cb){
